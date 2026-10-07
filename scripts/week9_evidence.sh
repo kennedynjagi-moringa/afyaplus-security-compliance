@@ -100,8 +100,11 @@ logging() {
   {
     echo "# Deliverable 3: redact, then hash"
     echo
-    echo "\$ AUDIT_HASH_KEY=<random> python -m security.redact_then_hash 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaHdfYW1pbmEifQ.c2lnbmF0dXJlLXNhbXBsZQ mama ID 28465731, simu 0712 345 678, homa kali'"
-    AUDIT_HASH_KEY="$(rnd)" $PY -m security.redact_then_hash 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaHdfYW1pbmEifQ.c2lnbmF0dXJlLXNhbXBsZQ mama ID 28465731, simu 0712 345 678, homa kali'
+    # a fake, unsigned JWT built at runtime (no token-shaped literal in git); the transcript shows it before redaction
+    local fake; fake=$($PY -c 'import base64 as b; e=lambda s: b.urlsafe_b64encode(s.encode()).decode().rstrip("="); print(".".join([e("{\"alg\":\"HS256\"}"), e("{\"sub\":\"chw_amina\"}"), e("not-signed")]))')
+    local raw="Authorization: Bearer $fake mama ID 28465731, simu 0712 345 678, homa kali"
+    echo "\$ AUDIT_HASH_KEY=<random> python -m security.redact_then_hash '$raw'"
+    AUDIT_HASH_KEY="$(rnd)" $PY -m security.redact_then_hash "$raw"
     echo "[exit $?]"; echo
     echo "## the audit lines the API wrote during 03_api_authz_and_guard.txt (copied to audit_sample.jsonl)"
     run cat "$OUT/audit_sample.jsonl"

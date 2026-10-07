@@ -1,0 +1,48 @@
+{
+  "note": "Findings of security/check_gitignore.py that were triaged as NOT secrets. Each entry is the SHA-256 of the matched text, never the text. Adding an entry needs a reviewer, like a code change.",
+  "triage_2026-10-07": "The scanner flagged hand-written fake tokens in Week 9 test and evidence code. Decoding the JWTs gives header {\"alg\":\"HS256\"}, payload {\"sub\":\"x\"} or {\"sub\":\"chw_amina\"}, and the literal signature text 'signature' / 'signature-sample': they were never signed by any key and are rejected by afyaplus/auth.py. The sk-proj- value is the alphabet, not an OpenAI key. Nothing to rotate. From the next commit on, tests and the evidence script build these fakes at runtime, so no new token-shaped literal enters git.",
+  "entries": [
+    {
+      "fingerprint_sha256": "de115b81dce156dd95d9a52582ddc6dda84d623df2cfad6c9477a378c5508333",
+      "kind": "jwt",
+      "first_commit": "de67f08",
+      "where": "scripts/week9_evidence.sh input to the redactor demo"
+    },
+    {
+      "fingerprint_sha256": "0b78eac0f128cf0ae2986b98861e4cb8dbce536cd64af935ffa85861028c5ce0",
+      "kind": "bearer_token",
+      "first_commit": "de67f08",
+      "where": "same, with the Bearer prefix"
+    },
+    {
+      "fingerprint_sha256": "4f36a3a5599745c6701a02b914b5dfd5673297373fb884af5144c2b1677f173a",
+      "kind": "jwt",
+      "first_commit": "f2855d4",
+      "where": "tests/test_audit_logging.py redactor case"
+    },
+    {
+      "fingerprint_sha256": "2c65de5d2e2fc09aa2f10e21558947e28ab3ddfe08d5528cbb3d8f2a10c3ff9d",
+      "kind": "bearer_token",
+      "first_commit": "f2855d4",
+      "where": "same, with the Bearer prefix"
+    },
+    {
+      "fingerprint_sha256": "38750363110a3edaf7e547ab2954aab33106d7bf42feb277ba50514cebfd394d",
+      "kind": "openai_key",
+      "first_commit": "f2855d4",
+      "where": "tests/test_audit_logging.py redactor case"
+    },
+    {
+      "fingerprint_sha256": "dedbaff6818787c1fd715ed7e78f2f320598f493106c90f39ec2d9465bbb79e6",
+      "kind": "jwt",
+      "first_commit": "(evidence transcript)",
+      "where": "docs/evidence/week9/06_redact_then_hash.txt: the runtime-built fake shown BEFORE redaction"
+    },
+    {
+      "fingerprint_sha256": "d7a8c5b44515b1650f0f2c29e26974664a411c5e60410bf2a3f3c9a441924587",
+      "kind": "bearer_token",
+      "first_commit": "(evidence transcript)",
+      "where": "docs/evidence/week9/06_redact_then_hash.txt: the runtime-built fake shown BEFORE redaction"
+    }
+  ]
+}

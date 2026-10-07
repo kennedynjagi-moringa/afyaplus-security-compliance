@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import re
 
@@ -11,13 +12,22 @@ from fastapi.testclient import TestClient
 from security.redact_then_hash import AuditTrail, payload_digest, redact, verify_chain
 
 KEY = b"unit-test-audit-key-0123456789abcdef-xyz"
+
+
+def _b64(raw: str) -> str:
+    return base64.urlsafe_b64encode(raw.encode()).decode().rstrip("=")
+
+
+# Built at runtime so no token-shaped literal is committed (security/check_gitignore.py would flag it).
+FAKE_JWT = ".".join([_b64('{"alg":"HS256"}'), _b64('{"sub":"x"}'), _b64("not-signed")])
+FAKE_KEY = "sk-" + "proj-" + "x" * 24
 NATIONAL_ID, PHONE = "28465731", "0712 345 678"
 
 
 @pytest.mark.parametrize("raw,label", [
-    ("Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJl", "BEARER"),
-    ("token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJl leaked", "JWT"),
-    ("key sk-proj-abcdefghijklmnopqrstuvwx", "API_KEY"),
+    (f"Authorization: Bearer {FAKE_JWT}", "BEARER"),
+    (f"token {FAKE_JWT} leaked", "JWT"),
+    (f"key {FAKE_KEY}", "API_KEY"),
     ("mother's ID number 28465731 for SHA", "NATIONAL_ID"),
     ("call her on 0712 345 678 or +254 712 345 678", "PHONE"),
     ("email amina.w@example.org", "EMAIL"),

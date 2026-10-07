@@ -14,11 +14,14 @@ Checks
   compose          docker-compose.yml takes JWT_SECRET and AUDIT_HASH_KEY from ${...}, never a literal
 
 A value counts as a placeholder (and is allowed) when it is a ${VAR} reference or contains one of the
-placeholder markers listed in security/secret_refs.yaml, e.g. "change-me" or "test-secret".
+placeholder markers listed in security/secret_refs.yaml, e.g. "change-me" or "test-secret". A finding that was
+triaged as not-a-secret is listed by SHA-256 fingerprint in security/scan_allowlist.json, with the reason.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 import subprocess
 import sys
@@ -58,11 +61,21 @@ def placeholders() -> list[str]:
     return [*rules["always"], *rules["outside_dev"]]
 
 
+def triaged_fingerprints() -> set[str]:
+    path = ROOT / "security" / "scan_allowlist.json"
+    return {e["fingerprint_sha256"] for e in json.loads(path.read_text())["entries"]} if path.is_file() else set()
+
+
+_TRIAGED = triaged_fingerprints()
+
+
 def scan_text(text: str, allowed: list[str]) -> list[str]:
     """Findings in `text`, each as 'kind: excerpt' with the secret itself masked."""
     found = []
     for kind, pattern in PATTERNS.items():
         for m in pattern.finditer(text):
+            if hashlib.sha256(m.group(0).encode()).hexdigest() in _TRIAGED:
+                continue
             found.append(f"{kind}: {m.group(0)[:10]}…")
     for m in ASSIGNMENT.finditer(text):
         value = m.group(2)
