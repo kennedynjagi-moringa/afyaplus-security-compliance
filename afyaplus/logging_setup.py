@@ -15,6 +15,8 @@ from contextvars import ContextVar
 from datetime import UTC, datetime
 from pathlib import Path
 
+from security.redact_then_hash import redact_value
+
 trace_id_var: ContextVar[str] = ContextVar("trace_id", default="-")
 
 _RESERVED = set(logging.LogRecord("", 0, "", 0, "", None, None).__dict__) | {"message", "asctime"}
@@ -33,7 +35,9 @@ class JsonFormatter(logging.Formatter):
             "trace_id": trace_id_var.get(),
             "event": record.getMessage(),
         }
-        payload.update({k: v for k, v in record.__dict__.items() if k not in _RESERVED})
+        # Week 9 safety net: every extra field passes through the same redactor as the audit trail, so a
+        # token or ID number that reaches a log call by mistake is masked before it is written.
+        payload.update({k: redact_value(v) for k, v in record.__dict__.items() if k not in _RESERVED})
         if record.exc_info:
             payload["exc"] = self.formatException(record.exc_info)
         return json.dumps(payload, default=str)

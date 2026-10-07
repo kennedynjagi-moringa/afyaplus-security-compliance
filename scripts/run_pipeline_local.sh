@@ -14,6 +14,8 @@ OUT_DIR=${OUT_DIR:-logs/pipeline}
 DEMO_FAILURE=${DEMO_FAILURE:-none}
 MCP_TARGET=${MCP_TARGET:-live}
 mkdir -p "$OUT_DIR"
+# Week 9: the MCP server and the API fail closed without AUDIT_HASH_KEY; use a throwaway key per local run.
+export AUDIT_HASH_KEY=${AUDIT_HASH_KEY:-$($PYTHON -c 'import secrets; print(secrets.token_urlsafe(48))')}
 REF=$(git describe --tags --exact-match 2>/dev/null || git rev-parse --abbrev-ref HEAD)
 echo "local pipeline: ref=$REF commit=$(git rev-parse --short=12 HEAD) dirty=$([[ -n $(git status --porcelain --untracked-files=no) ]] && echo yes || echo no) demo_failure=$DEMO_FAILURE mcp_target=$MCP_TARGET"
 
