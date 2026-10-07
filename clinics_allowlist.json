@@ -1,0 +1,26 @@
+{
+  "version": "2026-10-05",
+  "note": "Monday's clinic allowlist. Each MCP caller (AFYA_CALLER, set by the authenticated host that spawns the server) sees only these clinics, and only if its role (AFYA_CALLER_ROLE) matches the entry. A caller not listed here sees no clinic at all. Pinned in security/corpus_pins.json; changes go through review like code.",
+  "subjects": {
+    "chw_amina": {
+      "role": "chw",
+      "clinics": ["KSM-001", "KSM-002", "KSM-003"],
+      "why": "Kisumu catchment: the three facilities her households are referred to"
+    },
+    "dispatcher_otieno": {
+      "role": "dispatcher",
+      "counties": ["Kisumu", "Nairobi"],
+      "why": "County referral desk for Kisumu and Nairobi"
+    },
+    "pharm_kisumu": {
+      "role": "partner_pharmacy",
+      "clinics": ["KSM-002"],
+      "why": "Partner pharmacy sees the one facility it resupplies"
+    },
+    "svc_mcp_probe": {
+      "role": "svc_probe",
+      "clinics": ["KSM-001"],
+      "why": "Health probe smoke call (scripts/check_mcp_health.py), one pinned clinic"
+    }
+  }
+}

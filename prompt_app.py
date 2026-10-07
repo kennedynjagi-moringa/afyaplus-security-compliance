@@ -7,10 +7,14 @@ Routes
 - GET  /ready       public. Spawns the bundled MCP server and runs the same probe as CI
                     (scripts/check_mcp_health.py). 200 when healthy, 503 otherwise. Cached for 60 s.
 - POST /token       OAuth2 password login -> JWT (unchanged from Weeks 6 and 7).
-- POST /v1/triage   scope triage:write. The prompt is chosen per routing key (ab_prompt_flag.py).
+- POST /v1/triage   JWT + role matrix action triage.submit (security/rbac.py). Week 9: the injection guard runs
+                    next and returns 400 before any prompt is chosen or model is called.
                     Response headers: X-Prompt-Version, X-Prompt-SHA, X-Prompt-Arm, X-Release.
-- GET  /v1/metrics  scope audit:read. Per-prompt-version and per-tool counters from tool_metrics.py
+- GET  /v1/metrics  JWT + action metrics.read. Per-prompt-version and per-tool counters from tool_metrics.py
                     (what scripts/canary_gate.py reads for its go / no-go).
+
+Startup fails closed (Week 9) on: an unusable secret (settings), a cleartext partner URL (transit_policy), or a
+pinned file that changed (corpus_pins).
 
 Run: uvicorn prompt_app:app --port 8080
 """
@@ -30,16 +34,18 @@ from fastapi.responses import JSONResponse
 
 from ab_prompt_flag import choose_prompt, effective_percent
 from afyaplus import SERVICE_NAME
-from afyaplus.auth import require_scopes
+from afyaplus.auth import require_action
 from afyaplus.auth import router as auth_router
 from afyaplus.logging_setup import configure_logging, trace_id_var
-from afyaplus.models import HealthResponse, PromptInfo, TriageRequest, TriageResponse
+from afyaplus.models import DISCLAIMER, HealthResponse, PromptInfo, TriageRequest, TriageResponse
 from afyaplus.settings import get_settings
 from afyaplus.users import User
 from prompt_loader import Bundle, load_bundle
+from security.corpus_pins import RUNTIME_FILES, verify_pins
+from security.injection_guard import scan
 from security.transit_policy import assert_partners_ok
 from tool_metrics import ToolMetrics
-from triage_engine import ModelUnavailable, apply_safety_rules, build_backend
+from triage_engine import FIXED_ACTIONS, ModelUnavailable, apply_safety_rules, build_backend, detect_danger_signs
 
 log = logging.getLogger("api")
 _VALID_ID = re.compile(r"^[A-Za-z0-9-]{8,64}$")
@@ -51,6 +57,7 @@ READY_CACHE_S = 60
 async def lifespan(app: FastAPI):
     settings = get_settings()  # fails closed on missing or placeholder secrets (security/resolve_secrets.py)
     assert_partners_ok(settings.deploy_env)  # no cleartext partner URL (security/transit_policy.py)
+    verify_pins(RUNTIME_FILES)  # clinic data, allowlist, configs, golden set unchanged since review (security/corpus_pins.py)
     configure_logging("api", settings.log_dir, "api.jsonl")
     # Verifies every served prompt against prompts/pin.json; a tampered or unpinned prompt stops startup.
     bundle = load_bundle(prompt_version_override=settings.prompt_version)
@@ -110,6 +117,29 @@ async def model_unavailable(request: Request, exc: ModelUnavailable) -> JSONResp
                         headers={"Retry-After": "10"})
 
 
+class InputRejected(Exception):
+    def __init__(self, rule_ids: list[str], danger_signs: list[str]) -> None:
+        super().__init__("input rejected")
+        self.rule_ids, self.danger_signs = rule_ids, danger_signs
+
+
+@app.exception_handler(InputRejected)
+async def input_rejected(request: Request, exc: InputRejected) -> JSONResponse:
+    """400 for override-style input. The code danger-sign rules (no model) still run, so a real emergency
+    described alongside the injected text is not lost."""
+    log.warning("input_rejected", extra={"rule_ids": exc.rule_ids, "danger_signs": exc.danger_signs})
+    safety_net = None
+    if exc.danger_signs:
+        safety_net = {"urgency": "EMERGENCY", "danger_signs": exc.danger_signs,
+                      "recommended_action": FIXED_ACTIONS["EMERGENCY"], "source": "code danger-sign rules, no model"}
+    return JSONResponse(status_code=400, content={
+        "detail": "The message contains instruction-like text, so it was not sent to the triage model. "
+                  "Describe only the patient's symptoms and send it again.",
+        "code": "INPUT_REJECTED", "rule_ids": exc.rule_ids, "request_id": request.state.request_id,
+        "safety_net": safety_net, "disclaimer": DISCLAIMER,
+    })
+
+
 @app.get("/health", response_model=HealthResponse, tags=["platform"])
 def health(request: Request) -> HealthResponse:
     settings = get_settings()
@@ -152,10 +182,13 @@ def triage_case(
     body: TriageRequest,
     request: Request,
     response: Response,
-    user: Annotated[User, Depends(require_scopes("triage:write"))],
+    user: Annotated[User, Depends(require_action("triage.submit"))],
     x_routing_key: Annotated[str | None, Header()] = None,
 ) -> TriageResponse:
     settings = get_settings()
+    guard = scan(body.message)
+    if guard.blocked:  # before the prompt is chosen and before any model call
+        raise InputRejected(guard.rule_ids, detect_danger_signs(body.message))
     bundle: Bundle = request.app.state.bundle
     metrics: ToolMetrics = request.app.state.metrics
     key = x_routing_key if x_routing_key and _VALID_KEY.match(x_routing_key) else user.username
@@ -192,7 +225,7 @@ def triage_case(
 @app.get("/v1/metrics", tags=["observability"])
 def metrics_summary(
     request: Request,
-    user: Annotated[User, Depends(require_scopes("audit:read"))],
+    user: Annotated[User, Depends(require_action("metrics.read"))],
     since: float = 0.0,
 ) -> dict:
     metrics: ToolMetrics = request.app.state.metrics

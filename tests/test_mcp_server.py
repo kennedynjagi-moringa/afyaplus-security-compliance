@@ -2,7 +2,17 @@
 
 from __future__ import annotations
 
+import pytest
+
 import logistics_mcp_versioned as srv
+
+
+@pytest.fixture(autouse=True)
+def as_dispatcher():
+    """Week 9: tools need a caller. The dispatcher sees Kisumu and Nairobi with full stock detail."""
+    token = srv.caller_var.set(srv.Caller("dispatcher_otieno", "dispatcher"))
+    yield
+    srv.caller_var.reset(token)
 
 
 def test_version_is_semver_and_reported_to_clients():

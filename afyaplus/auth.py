@@ -3,6 +3,8 @@
 - `POST /token` exchanges username/password (OAuth2 password form) for a bearer token.
 - `get_current_user` turns a missing, malformed, expired or forged token into 401.
 - `require_scopes(...)` turns a valid token without the needed scope into 403.
+- `require_action(...)` (Week 9) asks the role matrix in security/rbac.py instead: default deny, so a role
+  nobody added to the matrix gets 403 everywhere. Authentication runs first, so no token is still 401.
 """
 
 from __future__ import annotations
@@ -19,6 +21,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from afyaplus.models import TokenResponse
 from afyaplus.settings import get_settings
 from afyaplus.users import User, authenticate, get_user
+from security import rbac
 
 log = logging.getLogger("api")
 
@@ -86,6 +89,20 @@ def require_scopes(*needed: str):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Role '{user.role}' lacks the required scope(s): {', '.join(missing)}.",
+            )
+        return user
+
+    return checker
+
+
+def require_action(action: str):
+    """Authorisation on top of authentication: a valid JWT AND a role the matrix allows (security/rbac.py)."""
+    def checker(user: CurrentUser) -> User:
+        if not rbac.is_allowed(user.role, action):
+            log.info("auth_forbidden", extra={"user": user.username, "role": user.role, "action": action})
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Role '{user.role}' is not allowed to {action}.",
             )
         return user
 

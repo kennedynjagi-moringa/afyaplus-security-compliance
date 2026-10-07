@@ -75,6 +75,9 @@ class Report:
 
 def server_params(args) -> StdioServerParameters:
     env = {**os.environ, "MCP_PROBE": "1"}  # LOG_DIR, TOOL_METRICS_DB, MCP_STUB_FAULT reach the server
+    # Week 9: the server needs a caller identity. The probe is its own least-privilege service role: one
+    # pinned clinic (clinics_allowlist.json), check_stock + catalogue only (security/rbac.py).
+    env.update({"AFYA_CALLER": "svc_mcp_probe", "AFYA_CALLER_ROLE": "svc_probe"})
     if args.command:
         return StdioServerParameters(command=args.command[0], args=args.command[1:], env=env, cwd=str(ROOT))
     script = "logistics_mcp_versioned.py" if args.target == "live" else "scripts/mcp_stub_server.py"

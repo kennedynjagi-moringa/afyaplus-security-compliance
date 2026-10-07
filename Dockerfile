@@ -42,7 +42,7 @@ RUN useradd --uid 10001 --create-home --shell /usr/sbin/nologin afya
 WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv
 # Least- to most-frequently changed.
-COPY clinics.json mcp_schema.lock.json ./
+COPY clinics.json clinics_allowlist.json mcp_schema.lock.json ./
 COPY afyaplus/ afyaplus/
 COPY security/ security/
 COPY tool_metrics.py logistics_mcp_versioned.py prompt_loader.py triage_engine.py ab_prompt_flag.py prompt_app.py ./
