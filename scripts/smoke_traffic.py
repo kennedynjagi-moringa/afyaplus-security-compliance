@@ -1,6 +1,7 @@
 """Post-deploy check 2: send golden-set messages through the deployed API from many routing keys.
 
-Every response must be 200 and carry the prompt SHA of the arm that served it. Prints the arm split.
+Every response must be 200 and carry the prompt SHA of the arm that served it, except golden cases the
+injection guard blocks (Week 9), which must be 400. Prints the arm split.
 The messages are golden cases, so the replay backend answers from the recordings (and costs $0).
 Credentials are the demo users documented in afyaplus/users.py (override with SMOKE_USER / SMOKE_PASSWORD).
 """
@@ -17,6 +18,9 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from security.injection_guard import scan  # noqa: E402
 
 
 def login(url: str, user: str, password: str) -> str:
@@ -36,9 +40,10 @@ def main(argv: list[str] | None = None) -> int:
     arms: collections.Counter = collections.Counter()
     shas: dict[str, set[str]] = collections.defaultdict(set)
     backends: collections.Counter = collections.Counter()
-    failures = 0
+    failures = guard_blocked = 0
     for i in range(args.n):
         case = cases[i % len(cases)]
+        expect_400 = scan(case["message"]).blocked  # Week 9: e.g. GS01, an injection test case
         body = json.dumps({"message": case["message"], "patient_age_years": case["patient_age_years"]}).encode()
         req = urllib.request.Request(f"{args.url}/v1/triage", data=body, method="POST", headers={  # noqa: S310
             "Authorization": f"Bearer {token}", "Content-Type": "application/json",
@@ -48,14 +53,18 @@ def main(argv: list[str] | None = None) -> int:
                 out = json.load(r)
                 ok_header = r.headers["X-Prompt-SHA"] == out["prompt_sha256"][:12]
         except urllib.error.HTTPError as exc:
+            if exc.code == 400 and expect_400:
+                guard_blocked += 1
+                continue
             failures += 1
             print(f"request {i}: HTTP {exc.code}", file=sys.stderr)
             continue
-        failures += not ok_header
+        failures += not ok_header or expect_400  # an injection case that got through is a failure
         arms[f"{out['arm']} {out['prompt_version']}"] += 1
         shas[out["arm"]].add(out["prompt_sha256"][:12])
         backends[out["backend"]] += 1
-    print(f"smoke traffic: {args.n} requests, {failures} failures")
+    print(f"smoke traffic: {args.n} requests, {failures} failures, {guard_blocked} blocked by the injection guard "
+          "as expected")
     for arm, n in sorted(arms.items()):
         print(f"  {arm:<28} {n:>4} ({n / args.n:.0%})  sha {', '.join(sorted(shas[arm.split()[0]]))}")
     print(f"  backends: {dict(backends)}")
