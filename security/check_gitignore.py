@@ -1,6 +1,7 @@
 """Secrets not in git (Deliverable 1). Run from the repo root; exit 0 clean, 1 on any finding.
 
     python -m security.check_gitignore
+    python -m security.check_gitignore --history-of ../../week-8/afyaplus-llmops-cicd   # another repo's history only
 
 Checks
   ignored          every path that may hold a secret or personal data is ignored by .gitignore
@@ -52,8 +53,18 @@ PATTERNS = {
 ASSIGNMENT = re.compile(r"\b(" + "|".join(SECRET_NAMES) + r")[\"']?[ \t]*[=:][ \t]*[\"']?([^\s\"',}]+)")
 
 
-def git(*args: str) -> str:
-    return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=False).stdout
+def git(*args: str, repo: Path = ROOT) -> str:
+    return subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True, check=False).stdout
+
+
+def scan_history(repo: Path, allowed: list[str]) -> tuple[list[str], int]:
+    hits, commit = [], ""
+    for line in git("log", "--all", "-p", "--no-color", "--format=commit %h", repo=repo).splitlines():
+        if line.startswith("commit "):
+            commit = line.split()[1]
+        elif line.startswith("+") and not line.startswith("+++"):
+            hits += [f"{commit}: {hit}" for hit in scan_text(line[1:], allowed)]
+    return hits, len(git("rev-list", "--all", repo=repo).split())
 
 
 def placeholders() -> list[str]:
@@ -89,9 +100,16 @@ def scan_text(text: str, allowed: list[str]) -> list[str]:
     return found
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    args = sys.argv[1:] if argv is None else argv
     results: list[tuple[str, bool, str]] = []
     allowed = placeholders()
+    if args[:1] == ["--history-of"]:
+        repo = Path(args[1]).resolve()
+        hits, n = scan_history(repo, allowed)
+        print(f"{'FAIL' if hits else 'PASS'}  history of {repo.name}: {n} commits, {len(hits)} findings "
+              + ("; ".join(hits[:5]) + " -> ROTATE" if hits else "(nothing to rotate)"))
+        return 1 if hits else 0
 
     for path in MUST_IGNORE:
         ok = subprocess.run(["git", "check-ignore", "-q", "--no-index", path], cwd=ROOT).returncode == 0
@@ -118,13 +136,7 @@ def main() -> int:
         content_hits += [f"{name}: {hit}" for hit in scan_text(text, allowed)]
     results.append(("tracked_content", not content_hits, "; ".join(content_hits[:5]) or "no secrets in tracked files"))
 
-    history_hits, commit = [], ""
-    for line in git("log", "--all", "-p", "--no-color", "--format=commit %h").splitlines():
-        if line.startswith("commit "):
-            commit = line.split()[1]
-        elif line.startswith("+") and not line.startswith("+++"):
-            history_hits += [f"{commit}: {hit}" for hit in scan_text(line[1:], allowed)]
-    n_commits = len(git("rev-list", "--all").split())
+    history_hits, n_commits = scan_history(ROOT, allowed)
     results.append(("history", not history_hits,
                     "; ".join(history_hits[:5]) + " -> ROTATE these secrets" if history_hits
                     else f"{n_commits} commits scanned, no secret ever added"))

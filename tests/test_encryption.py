@@ -118,6 +118,18 @@ def test_api_settings_refuse_a_placeholder_secret(monkeypatch):
         Settings(_env_file=None)
 
 
+def test_startup_error_names_the_problem_but_never_echoes_secret_values(monkeypatch):
+    from afyaplus.settings import SettingsError, get_settings
+
+    monkeypatch.delenv("JWT_SECRET")
+    monkeypatch.setenv("AUDIT_HASH_KEY", GOOD)
+    get_settings.cache_clear()
+    with pytest.raises(SettingsError) as info:
+        get_settings()
+    assert "jwt_secret: Field required" in str(info.value)
+    assert GOOD[:5] not in str(info.value) and info.value.__cause__ is None
+
+
 # ---- at rest --------------------------------------------------------------------
 
 def test_envelope_encryption_round_trip_and_tamper_detection():

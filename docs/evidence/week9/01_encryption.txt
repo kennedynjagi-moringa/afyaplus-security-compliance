@@ -1,0 +1,151 @@
+# Deliverable 1: transit policy, secrets not in git, fail-closed boot, envelope encryption at rest
+
+$ python -m security.transit_policy --env dev
+transit policy, environment=dev, source=partners.yaml
+  ALLOW  openai_api             https://api.openai.com/v1                        https
+  ALLOW  local_mock_partner     http://127.0.0.1:8765/mock                       lab exception: cleartext loopback allowed in dev
+2 allowed, 0 denied -> exit 0
+[exit 0]
+
+$ python -m security.transit_policy --env prod
+transit policy, environment=prod, source=partners.yaml
+  ALLOW  openai_api             https://api.openai.com/v1                        https
+  ALLOW  azure_key_vault        https://afyaplus-kv.vault.azure.net              https
+  ALLOW  clinic_stock_feed      https://stock-feed.benkiyetu.example/v1/clinics  https
+  ALLOW  sms_referral_gateway   https://sms.partner.example/v2/messages          https
+4 allowed, 0 denied -> exit 0
+[exit 0]
+
+## captured failing run: a cleartext production host (and two other bad URLs) is refused
+$ python -m security.transit_policy --file security/fixtures/partners_cleartext.yaml --env prod
+transit policy, environment=prod, source=partners_cleartext.yaml
+  ALLOW  openai_api             https://api.openai.com/v1                        https
+  DENY   clinic_stock_feed      http://stock-feed.benkiyetu.example/v1/clinics   cleartext http to non-local host 'stock-feed.benkiyetu.example'
+  DENY   local_mock_partner     http://127.0.0.1:8765/mock                       cleartext loopback is not allowed in prod
+  DENY   sms_referral_gateway   https://svc_user:not-a-real-password@sms.partner.example/v2/messages credentials embedded in the URL
+1 allowed, 3 denied -> exit 1
+[exit 1]
+
+$ python -m security.transit_policy --url http://triage.benkiyetu.example/v1/triage --env prod
+transit policy, environment=prod, source=--url
+  DENY   --url                  http://triage.benkiyetu.example/v1/triage        cleartext http to non-local host 'triage.benkiyetu.example'
+0 allowed, 1 denied -> exit 1
+[exit 1]
+
+## secrets not in git
+$ python -m security.check_gitignore
+PASS  ignored .env                                   .gitignore:2:.env
+PASS  ignored .env.local                             .gitignore:3:.env.*
+PASS  ignored .env.prod                              .gitignore:3:.env.*
+PASS  ignored .env.staging                           .gitignore:3:.env.*
+PASS  ignored logs/audit.jsonl                       .gitignore:11:logs/*
+PASS  ignored logs/api.jsonl                         .gitignore:11:logs/*
+PASS  ignored logs/mcp_tools.jsonl                   .gitignore:11:logs/*
+PASS  ignored logs/tool_metrics.db                   .gitignore:11:logs/*
+PASS  ignored logs/archive/audit-2026-10.jsonl.enc   .gitignore:11:logs/*
+PASS  ignored secrets/jwt_secret                     .gitignore:5:secrets/
+PASS  ignored secrets/audit_kek                      .gitignore:5:secrets/
+PASS  ignored deploy/tls/server.key                  .gitignore:6:*.key
+PASS  ignored deploy/tls/server.pem                  .gitignore:7:*.pem
+PASS  ignored dpa/work/triage_messages.jsonl         .gitignore:14:dpa/work/
+PASS  not_ignored .env.example                       committable
+PASS  not_ignored security/secret_refs.yaml          committable
+PASS  not_ignored dpa/deletion_records.jsonl         committable
+PASS  not_ignored logs/.gitkeep                      committable
+PASS  not_tracked                                    125 tracked files, none must-ignore
+PASS  tracked_content                                no secrets in tracked files
+PASS  history                                        12 commits scanned, no secret ever added
+PASS  compose                                        JWT_SECRET, AUDIT_HASH_KEY come from ${...}
+22/22 checks passed -> exit 0
+[exit 0]
+
+## the Week 6 to 8 repositories this release builds on: nothing leaked, so nothing to rotate
+$ python -m security.check_gitignore --history-of ../../week-6/afyaplus-service-platform
+PASS  history of afyaplus-service-platform: 28 commits, 0 findings (nothing to rotate)
+[exit 0]
+
+$ python -m security.check_gitignore --history-of ../../week-7/afyaplus-cost-deployment
+PASS  history of afyaplus-cost-deployment: 7 commits, 0 findings (nothing to rotate)
+[exit 0]
+
+$ python -m security.check_gitignore --history-of ../../week-8/afyaplus-llmops-cicd
+PASS  history of afyaplus-llmops-cicd: 35 commits, 0 findings (nothing to rotate)
+[exit 0]
+
+$ git check-ignore -v --no-index .env .env.prod logs/audit.jsonl secrets/jwt_secret deploy/tls/server.key
+.gitignore:2:.env	.env
+.gitignore:3:.env.*	.env.prod
+.gitignore:11:logs/*	logs/audit.jsonl
+.gitignore:5:secrets/	secrets/jwt_secret
+.gitignore:6:*.key	deploy/tls/server.key
+[exit 0]
+
+$ git ls-files .env .env.prod logs
+logs/.gitkeep
+[exit 0]
+
+$ grep -n JWT_SECRET\|AUDIT_HASH_KEY docker-compose.yml
+2:# JWT_SECRET and AUDIT_HASH_KEY come from the environment or .env (in a real deployment, from Key Vault via
+16:      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET (48+ random chars)}
+17:      AUDIT_HASH_KEY: ${AUDIT_HASH_KEY:?set AUDIT_HASH_KEY (48+ random chars)}
+[exit 0]
+
+## captured failing run: boot without JWT_SECRET fails closed (exit 1)
+$ env -u JWT_SECRET AUDIT_HASH_KEY=<random> SECRETS_DIR=/nonexistent python -m security.resolve_secrets --check
+REFUSING TO START: JWT_SECRET unusable (fail closed, exit 1)
+secrets for component=api DEPLOY_ENV=dev
+  FAIL  JWT_SECRET      required source=-      missing    
+  OK    AUDIT_HASH_KEY  required source=env    ok         len=64 sha256:9a47c916
+  skip  OPENAI_API_KEY  optional source=-      missing    
+[exit 1]
+
+$ JWT_SECRET=change-me-to-a-long-random-string-of-48-chars AUDIT_HASH_KEY=<random> DEPLOY_ENV=prod python -m security.resolve_secrets --check
+REFUSING TO START: JWT_SECRET unusable (fail closed, exit 1)
+secrets for component=api DEPLOY_ENV=prod
+  FAIL  JWT_SECRET      required source=env    placeholder value ('change-me') in prod len=45 sha256:ffcc1720
+  OK    AUDIT_HASH_KEY  required source=env    ok         len=64 sha256:b2b8a568
+  skip  OPENAI_API_KEY  optional source=-      missing    
+[exit 1]
+
+$ JWT_SECRET=<random> AUDIT_HASH_KEY=<random> python -m security.resolve_secrets --check
+secrets for component=api DEPLOY_ENV=dev
+  OK    JWT_SECRET      required source=env    ok         len=64 sha256:0583f163
+  OK    AUDIT_HASH_KEY  required source=env    ok         len=64 sha256:7e5a514f
+  skip  OPENAI_API_KEY  optional source=-      missing    
+[exit 0]
+
+$ env -u JWT_SECRET uvicorn prompt_app:app --port 8099     # the API itself, run from a directory with no .env
+    raise SettingsError(f"refusing to start: {problems}") from None
+afyaplus.settings.SettingsError: refusing to start: jwt_secret: Field required
+ERROR:    Application startup failed. Exiting.
+[uvicorn exited: application startup failed]
+
+$ env -u JWT_SECRET docker compose config     # compose refuses too
+error while interpolating services.triage.environment.JWT_SECRET: required variable JWT_SECRET is missing a value: set JWT_SECRET (48+ random chars)
+[exit 1]
+
+## at rest: envelope encryption of an audit log archive (AUDIT_KEK is a throwaway key for this run)
+$ python -m security.encrypt_at_rest encrypt logs/archive_demo/audit-2026-10.jsonl
+encrypted logs/archive_demo/audit-2026-10.jsonl -> logs/archive_demo/audit-2026-10.jsonl.enc (AES-256-GCM, local-kek-f52f7b66eb9e, 309 bytes)
+[exit 0]
+
+$ head -c 260 logs/archive_demo/audit-2026-10.jsonl.enc   # header: alg, kek_id, wrapped data key; then ciphertext
+AFYAENC1
+{"aad": "audit-2026-10.jsonl", "alg": "AES-256-GCM", "kek_id": "local-kek-f52f7b66eb9e", "nonce": "EjIFPX1dP36oNCle", "wrapped_dek": "BqLuw8h95kgVSelWhoYuIDSeyhAy/h7KZcz7QjI0EKaNA1ePPkLpyoIrpNAXQQe9Yl+dKTUnl8ORL9V5"}
+d.h..Q..&B..i.a./...O.+q.&TQu.j...
+
+$ grep -c chw_amina logs/archive_demo/audit-2026-10.jsonl.enc
+0
+
+$ python -m security.encrypt_at_rest decrypt logs/archive_demo/audit-2026-10.jsonl.enc --out logs/archive_demo/roundtrip.jsonl
+decrypted logs/archive_demo/audit-2026-10.jsonl.enc -> logs/archive_demo/roundtrip.jsonl
+[exit 0]
+
+$ cmp logs/archive_demo/audit-2026-10.jsonl logs/archive_demo/roundtrip.jsonl
+[exit 0]
+
+## captured failing run: the wrong key cannot decrypt
+$ python -m security.encrypt_at_rest decrypt logs/archive_demo/audit-2026-10.jsonl.enc --out logs/archive_demo/x.jsonl
+DECRYPT FAILED: cannot decrypt: wrong key or tampered file (InvalidTag)
+[exit 1]
+

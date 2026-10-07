@@ -1,6 +1,6 @@
 # MCP health probe after the Week 9 changes (svc_probe identity, one pinned clinic)
 
-$ .venv/bin/python scripts/check_mcp_health.py
+$ python scripts/check_mcp_health.py
 ## MCP health (live): afyaplus-logistics 1.2.0
 
 | check | result | detail |
