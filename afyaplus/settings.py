@@ -11,7 +11,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr, field_validator, model_validator
+from pydantic import Field, SecretStr, ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -72,6 +72,15 @@ class Settings(BaseSettings):
         return self
 
 
+class SettingsError(RuntimeError):
+    """Startup settings are unusable. The message names fields and reasons, never values."""
+
+
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    return Settings()
+    try:
+        return Settings()
+    except ValidationError as exc:
+        # Week 9: pydantic's own message echoes the raw input, which starts with the other secrets' values.
+        problems = "; ".join(f"{'.'.join(map(str, e['loc'])) or 'settings'}: {e['msg']}" for e in exc.errors())
+        raise SettingsError(f"refusing to start: {problems}") from None

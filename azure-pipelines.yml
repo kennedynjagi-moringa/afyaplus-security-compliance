@@ -41,6 +41,8 @@ stages:
       - job: lint_test
         displayName: lint-test
         steps:
+          - checkout: self
+            fetchDepth: 0            # Week 9: the secret scan reads every commit
           - task: UsePythonVersion@0
             inputs: {versionSpec: "$(pythonVersion)"}
           - script: pip install -r requirements-dev.txt
@@ -54,6 +56,8 @@ stages:
                 python check_prompt_pin.py
               fi
             displayName: Release alignment
+          - script: PYTHON=python scripts/security_checks.sh
+            displayName: Security checks (Week 9)
           - script: python -m pytest -q --junitxml=pytest.xml
             displayName: Unit tests
             env:

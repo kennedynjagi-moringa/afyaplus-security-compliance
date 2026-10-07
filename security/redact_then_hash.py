@@ -35,7 +35,7 @@ GENESIS = "0" * 64
 
 # Order matters: whole tokens first, so a JWT is not half-eaten by the digit rule.
 REDACTIONS: list[tuple[str, re.Pattern[str]]] = [
-    ("BEARER", re.compile(r"\bBearer\s+[A-Za-z0-9._~+/-]+=*", re.I)),
+    ("BEARER", re.compile(r"\bBearer\s+(?=[A-Za-z0-9._~+/-]*[0-9._~+/-])[A-Za-z0-9._~+/-]{8,}=*", re.I)),
     ("JWT", re.compile(r"\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*")),
     ("API_KEY", re.compile(r"\b(sk|pk|rk)-(proj-)?[A-Za-z0-9_-]{16,}\b|\bAKIA[0-9A-Z]{16}\b")),
     ("EMAIL", re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")),

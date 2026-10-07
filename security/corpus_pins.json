@@ -14,11 +14,11 @@
       "what": "outbound partner URLs (transit policy input)"
     },
     "config/triage.yaml": {
-      "sha256": "3b35d6f15958a11f2044c9a2c58cd1245c3d508521ec48ecb0c05f956d27a100",
+      "sha256": "5e97c8c56371978b60f3a57509c40dc339df6ddff59c9656ad4f1b89fc38e8ef",
       "what": "release config: model, prompt routing, MCP version"
     },
     "prompts/pin.json": {
-      "sha256": "0ab75f5308b22692d8d1abd8b2c5d746bafb6f16a913cbbad5b1fb92c3b6ea20",
+      "sha256": "6385b96690097ea30dbd99145757823ba9589fc9e7520d49e40bc7427f5f9767",
       "what": "prompt lockfile (it pins each prompt's SHA-256 in turn)"
     },
     "security/secret_refs.yaml": {

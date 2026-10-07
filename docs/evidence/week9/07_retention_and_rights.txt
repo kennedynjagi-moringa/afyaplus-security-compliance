@@ -2,24 +2,24 @@
 
 $ cp fixtures/dpa/*.jsonl dpa/work/fixtures/dpa/ && cp fixtures/dpa/audit.jsonl dpa/work/logs/audit.jsonl
 
-$ .venv/bin/python -m dpa.retention_sweeper --root dpa/work --now 2026-10-09T02:00:00+03:00 --dry-run --operator ops_kamau
+$ python -m dpa.retention_sweeper --root dpa/work --now 2026-10-09T02:00:00+03:00 --dry-run --operator ops_kamau
   triage_messages   retain 90 days     expired   5  kept   7  undated 0  (dry run)
   audit_logs        retain 365 days    expired   0  kept  12  undated 0  (dry run)
   mcp_audit_logs    retain 365 days    expired   0  kept   0  undated 0  (dry run)
   api_logs          retain 30 days     expired   0  kept   0  undated 0  (dry run)
   mcp_tool_logs     retain 30 days     expired   0  kept   0  undated 0  (dry run)
   tool_metrics      retain 180 days    documented_job  (dry run)
-run sweep-a2bf52feeaa4: 5 records would be deleted (dry run); 6 lines appended to deletion_records.jsonl
+run sweep-021cb06b20c9: 5 records would be deleted (dry run); 6 lines appended to deletion_records.jsonl
 [exit 0]
 
-$ .venv/bin/python -m dpa.retention_sweeper --root dpa/work --now 2026-10-09T02:00:00+03:00 --operator ops_kamau
+$ python -m dpa.retention_sweeper --root dpa/work --now 2026-10-09T02:00:00+03:00 --operator ops_kamau
   triage_messages   retain 90 days     deleted   5  kept   7  undated 0
   audit_logs        retain 365 days    deleted   0  kept  12  undated 0
   mcp_audit_logs    retain 365 days    deleted   0  kept   0  undated 0
   api_logs          retain 30 days     deleted   0  kept   0  undated 0
   mcp_tool_logs     retain 30 days     deleted   0  kept   0  undated 0
   tool_metrics      retain 180 days    documented_job
-run sweep-aa7e97b7efb0: 5 records deleted; 6 lines appended to deletion_records.jsonl
+run sweep-9e4f1044ab60: 5 records deleted; 6 lines appended to deletion_records.jsonl
 [exit 0]
 
 $ wc -l fixtures/dpa/triage_messages.jsonl dpa/work/fixtures/dpa/triage_messages.jsonl
@@ -29,21 +29,21 @@ $ wc -l fixtures/dpa/triage_messages.jsonl dpa/work/fixtures/dpa/triage_messages
 [exit 0]
 
 ## captured refusals: the deletion log is never swept; only ops may sweep
-$ .venv/bin/python -m dpa.retention_sweeper --root dpa/work --store deletion_records
+$ python -m dpa.retention_sweeper --root dpa/work --store deletion_records
 REFUSED: deletion_records: dpa/deletion_records.jsonl is the deletion log and is never swept
 [exit 2]
 
-$ .venv/bin/python -m dpa.retention_sweeper --root dpa/work --role chw
+$ python -m dpa.retention_sweeper --root dpa/work --role chw
 REFUSED: role 'chw' may not run the retention sweep (security/rbac.py)
 [exit 2]
 
 ## rights: access (household and CHW), erasure plan, erasure applied, wrong role
-$ .venv/bin/python -m dpa.rights_lookup access --request-id TRG-2026-0412
+$ python -m dpa.rights_lookup access --request-id TRG-2026-0412
 {
   "subject": {
     "request_id": "TRG-2026-0412"
   },
-  "generated_at": "2026-10-07T20:16:50+00:00",
+  "generated_at": "2026-10-07T20:26:49+00:00",
   "records": {
     "triage_messages": [
       {
@@ -83,12 +83,12 @@ $ .venv/bin/python -m dpa.rights_lookup access --request-id TRG-2026-0412
 }
 [exit 0]
 
-$ .venv/bin/python -m dpa.rights_lookup access --chw chw_amina
+$ python -m dpa.rights_lookup access --chw chw_amina
 {
   "subject": {
     "chw": "chw_amina"
   },
-  "generated_at": "2026-10-07T20:16:50+00:00",
+  "generated_at": "2026-10-07T20:26:49+00:00",
   "records": {
     "triage_messages_authored": [
       {
@@ -214,7 +214,7 @@ $ .venv/bin/python -m dpa.rights_lookup access --chw chw_amina
 }
 [exit 0]
 
-$ .venv/bin/python -m dpa.rights_lookup erasure --request-id TRG-2026-0412 --root dpa/work --ticket DSR-0001
+$ python -m dpa.rights_lookup erasure --request-id TRG-2026-0412 --root dpa/work --ticket DSR-0001
 {
   "request_id_sha256": "94eda129162240678802a7991c14d7760707923055e4fe83413d3dc985fd4b42",
   "ticket": "DSR-0001",
@@ -226,7 +226,7 @@ $ .venv/bin/python -m dpa.rights_lookup erasure --request-id TRG-2026-0412 --roo
 }
 [exit 0]
 
-$ .venv/bin/python -m dpa.rights_lookup erasure --request-id TRG-2026-0412 --root dpa/work --ticket DSR-0001 --apply
+$ python -m dpa.rights_lookup erasure --request-id TRG-2026-0412 --root dpa/work --ticket DSR-0001 --apply
 {
   "request_id_sha256": "94eda129162240678802a7991c14d7760707923055e4fe83413d3dc985fd4b42",
   "ticket": "DSR-0001",
@@ -238,25 +238,25 @@ $ .venv/bin/python -m dpa.rights_lookup erasure --request-id TRG-2026-0412 --roo
 }
 [exit 0]
 
-$ .venv/bin/python -m dpa.rights_lookup access --chw chw_amina --role ops
+$ python -m dpa.rights_lookup access --chw chw_amina --role ops
 REFUSED: role 'ops' may not rights.lookup (security/rbac.py)
 [exit 2]
 
 ## the deletion record (committed as dpa/deletion_records.jsonl)
 $ cat dpa/deletion_records.jsonl
-{"run_id":"sweep-a2bf52feeaa4","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:49+00:00","operator":"ops_kamau","store":"triage_messages","reason":"retention","rule":"retain 90 days","dry_run":true,"cutoff":"2026-07-11T02:00:00+03:00","deleted":5,"kept":7,"undated":0,"deleted_ids_sha256":"b83553482f7d6d707f6e0048e78df0045b5e56b31cc187ab978bdcbd65d3a01e","oldest_deleted":"2026-05-04T08:12:00+03:00","newest_deleted":"2026-07-09T16:48:00+03:00"}
-{"run_id":"sweep-a2bf52feeaa4","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:49+00:00","operator":"ops_kamau","store":"audit_logs","reason":"retention","rule":"retain 365 days","dry_run":true,"cutoff":"2025-10-09T02:00:00+03:00","deleted":0,"kept":12,"undated":0,"deleted_ids_sha256":null,"oldest_deleted":null,"newest_deleted":null}
-{"run_id":"sweep-a2bf52feeaa4","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:49+00:00","operator":"ops_kamau","store":"mcp_audit_logs","reason":"retention","rule":"retain 365 days","dry_run":true,"cutoff":"2025-10-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
-{"run_id":"sweep-a2bf52feeaa4","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:49+00:00","operator":"ops_kamau","store":"api_logs","reason":"retention","rule":"retain 30 days","dry_run":true,"cutoff":"2026-09-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
-{"run_id":"sweep-a2bf52feeaa4","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:49+00:00","operator":"ops_kamau","store":"mcp_tool_logs","reason":"retention","rule":"retain 30 days","dry_run":true,"cutoff":"2026-09-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
-{"run_id":"sweep-a2bf52feeaa4","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:49+00:00","operator":"ops_kamau","store":"tool_metrics","reason":"retention","rule":"retain 180 days","dry_run":true,"skipped":"documented_job"}
-{"run_id":"sweep-aa7e97b7efb0","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:50+00:00","operator":"ops_kamau","store":"triage_messages","reason":"retention","rule":"retain 90 days","dry_run":false,"cutoff":"2026-07-11T02:00:00+03:00","deleted":5,"kept":7,"undated":0,"deleted_ids_sha256":"b83553482f7d6d707f6e0048e78df0045b5e56b31cc187ab978bdcbd65d3a01e","oldest_deleted":"2026-05-04T08:12:00+03:00","newest_deleted":"2026-07-09T16:48:00+03:00"}
-{"run_id":"sweep-aa7e97b7efb0","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:50+00:00","operator":"ops_kamau","store":"audit_logs","reason":"retention","rule":"retain 365 days","dry_run":false,"cutoff":"2025-10-09T02:00:00+03:00","deleted":0,"kept":12,"undated":0,"deleted_ids_sha256":null,"oldest_deleted":null,"newest_deleted":null}
-{"run_id":"sweep-aa7e97b7efb0","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:50+00:00","operator":"ops_kamau","store":"mcp_audit_logs","reason":"retention","rule":"retain 365 days","dry_run":false,"cutoff":"2025-10-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
-{"run_id":"sweep-aa7e97b7efb0","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:50+00:00","operator":"ops_kamau","store":"api_logs","reason":"retention","rule":"retain 30 days","dry_run":false,"cutoff":"2026-09-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
-{"run_id":"sweep-aa7e97b7efb0","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:50+00:00","operator":"ops_kamau","store":"mcp_tool_logs","reason":"retention","rule":"retain 30 days","dry_run":false,"cutoff":"2026-09-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
-{"run_id":"sweep-aa7e97b7efb0","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:16:50+00:00","operator":"ops_kamau","store":"tool_metrics","reason":"retention","rule":"retain 180 days","dry_run":false,"skipped":"documented_job"}
-{"run_id":"erasure-fd8cc002c644","ts":"2026-10-07T20:16:50+00:00","operator":"dpo_njeri","store":"triage_messages","reason":"erasure_request","ticket":"DSR-0001","dry_run":true,"deleted":0,"kept":7,"deleted_ids_sha256":"511ae02afac02a25a6344cb01805afbf22b48d7112c65b87abb9f97297c42b40"}
-{"run_id":"erasure-c05f43f9eb40","ts":"2026-10-07T20:16:50+00:00","operator":"dpo_njeri","store":"triage_messages","reason":"erasure_request","ticket":"DSR-0001","dry_run":false,"deleted":1,"kept":6,"deleted_ids_sha256":"511ae02afac02a25a6344cb01805afbf22b48d7112c65b87abb9f97297c42b40"}
+{"run_id":"sweep-021cb06b20c9","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"triage_messages","reason":"retention","rule":"retain 90 days","dry_run":true,"cutoff":"2026-07-11T02:00:00+03:00","deleted":5,"kept":7,"undated":0,"deleted_ids_sha256":"b83553482f7d6d707f6e0048e78df0045b5e56b31cc187ab978bdcbd65d3a01e","oldest_deleted":"2026-05-04T08:12:00+03:00","newest_deleted":"2026-07-09T16:48:00+03:00"}
+{"run_id":"sweep-021cb06b20c9","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"audit_logs","reason":"retention","rule":"retain 365 days","dry_run":true,"cutoff":"2025-10-09T02:00:00+03:00","deleted":0,"kept":12,"undated":0,"deleted_ids_sha256":null,"oldest_deleted":null,"newest_deleted":null}
+{"run_id":"sweep-021cb06b20c9","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"mcp_audit_logs","reason":"retention","rule":"retain 365 days","dry_run":true,"cutoff":"2025-10-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
+{"run_id":"sweep-021cb06b20c9","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"api_logs","reason":"retention","rule":"retain 30 days","dry_run":true,"cutoff":"2026-09-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
+{"run_id":"sweep-021cb06b20c9","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"mcp_tool_logs","reason":"retention","rule":"retain 30 days","dry_run":true,"cutoff":"2026-09-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
+{"run_id":"sweep-021cb06b20c9","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"tool_metrics","reason":"retention","rule":"retain 180 days","dry_run":true,"skipped":"documented_job"}
+{"run_id":"sweep-9e4f1044ab60","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"triage_messages","reason":"retention","rule":"retain 90 days","dry_run":false,"cutoff":"2026-07-11T02:00:00+03:00","deleted":5,"kept":7,"undated":0,"deleted_ids_sha256":"b83553482f7d6d707f6e0048e78df0045b5e56b31cc187ab978bdcbd65d3a01e","oldest_deleted":"2026-05-04T08:12:00+03:00","newest_deleted":"2026-07-09T16:48:00+03:00"}
+{"run_id":"sweep-9e4f1044ab60","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"audit_logs","reason":"retention","rule":"retain 365 days","dry_run":false,"cutoff":"2025-10-09T02:00:00+03:00","deleted":0,"kept":12,"undated":0,"deleted_ids_sha256":null,"oldest_deleted":null,"newest_deleted":null}
+{"run_id":"sweep-9e4f1044ab60","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"mcp_audit_logs","reason":"retention","rule":"retain 365 days","dry_run":false,"cutoff":"2025-10-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
+{"run_id":"sweep-9e4f1044ab60","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"api_logs","reason":"retention","rule":"retain 30 days","dry_run":false,"cutoff":"2026-09-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
+{"run_id":"sweep-9e4f1044ab60","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"mcp_tool_logs","reason":"retention","rule":"retain 30 days","dry_run":false,"cutoff":"2026-09-09T02:00:00+03:00","deleted":0,"kept":0,"undated":0,"note":"store file not present"}
+{"run_id":"sweep-9e4f1044ab60","ts":"2026-10-09T02:00:00+03:00","ran_at":"2026-10-07T20:26:49+00:00","operator":"ops_kamau","store":"tool_metrics","reason":"retention","rule":"retain 180 days","dry_run":false,"skipped":"documented_job"}
+{"run_id":"erasure-4d6c75edf6f6","ts":"2026-10-07T20:26:49+00:00","operator":"dpo_njeri","store":"triage_messages","reason":"erasure_request","ticket":"DSR-0001","dry_run":true,"deleted":0,"kept":7,"deleted_ids_sha256":"511ae02afac02a25a6344cb01805afbf22b48d7112c65b87abb9f97297c42b40"}
+{"run_id":"erasure-d893ccdd2aef","ts":"2026-10-07T20:26:49+00:00","operator":"dpo_njeri","store":"triage_messages","reason":"erasure_request","ticket":"DSR-0001","dry_run":false,"deleted":1,"kept":6,"deleted_ids_sha256":"511ae02afac02a25a6344cb01805afbf22b48d7112c65b87abb9f97297c42b40"}
 [exit 0]
 

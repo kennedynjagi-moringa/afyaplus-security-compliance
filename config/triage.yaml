@@ -2,7 +2,7 @@
 # prompt_loader.TriageConfig validates every field at startup, and check_prompt_pin.py checks it in CI.
 # /health reports the SHA-256 of this file, so you can see which config a running container uses.
 
-release: 1.3.1                 # git tag v1.3.1 == image afyaplus-triage:1.3.1 == prompts/pin.json bundle_version
+release: 1.4.0                 # git tag v1.4.0 == image afyaplus-triage:1.4.0 == prompts/pin.json bundle_version
 prompt_version: 1.2.0          # the prompt that serves all traffic; must be pinned in prompts/pin.json
 
 candidate:                     # canary prompt (Thursday Lab 1, ab_prompt_flag.py)

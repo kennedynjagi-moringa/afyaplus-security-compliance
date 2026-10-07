@@ -1,0 +1,27 @@
+# MCP health probe after the Week 9 changes (svc_probe identity, one pinned clinic)
+
+$ python scripts/check_mcp_health.py
+## MCP health (live): afyaplus-logistics 1.2.0
+
+| check | result | detail |
+|---|---|---|
+| handshake | pass | serverInfo.name='afyaplus-logistics' (expected 'afyaplus-logistics'), protocol 2025-11-25 |
+| version | pass | serverInfo.version=1.2.0 (config/triage.yaml mcp.version=1.2.0) |
+| lock_version | pass | lock generated for 1.2.0, server reports 1.2.0 |
+| required_tools | pass | listed: check_stock, find_clinics |
+| schema_lock | pass | all input schemas match the lock |
+| smoke_call | pass | check_stock({'clinic_id': 'KSM-001', 'item': 'oxytocin_10iu'}) -> isError=False, ok=True, quantity=0, status='out_of_stock' |
+| error_contract | pass | check_stock({'clinic_id': 'not-an-id', 'item': 'oxytocin_10iu'}) -> isError=True, error.code=INVALID_CLINIC_ID |
+| resource | pass | clinics://catalogue -> 1307 chars |
+
+MCP HEALTHY (exit 0)
+[exit 0]
+
+## captured failing run: the MCP server will not start without AUDIT_HASH_KEY
+$ env -u AUDIT_HASH_KEY python scripts/check_mcp_health.py
+UNREACHABLE: McpError: Connection closed
+
+MCP PROBE FAILED: unreachable (exit 2)
+[exit 2]
+$ tail -1 logs/mcp_probe_live.stderr.log
+ValueError: audit hash key must be at least 32 bytes (AUDIT_HASH_KEY)

@@ -1,0 +1,43 @@
+# Deliverable 3: redact, then hash
+
+$ AUDIT_HASH_KEY=<random> python -m security.redact_then_hash 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaHdfYW1pbmEifQ.bm90LXNpZ25lZA mama ID 28465731, simu 0712 345 678, homa kali'
+{
+  "1_redacted": "Authorization: [BEARER] mama ID [NATIONAL_ID], simu [PHONE], homa kali",
+  "redactions": {
+    "BEARER": 1,
+    "PHONE": 1,
+    "NATIONAL_ID": 1
+  },
+  "2_hash": "hmac-sha256:1d5bbab56b632cadd763b33c275fdc9fb6e8dd04e4cf1430e06f79749cd78f6d",
+  "hash_key_id": "k-35832dd9"
+}
+[exit 0]
+
+## the audit lines the API wrote during 03_api_authz_and_guard.txt (copied to audit_sample.jsonl)
+$ cat docs/evidence/week9/audit_sample.jsonl
+{"ts":"2026-10-07T20:26:44.002+00:00","trace_id":"e6001b30cb2e4627abf38a030d19c3b7","actor":"chw_amina","actor_role":"chw","action":"auth.login","resource":"/token","outcome":"success","prev":"0000000000000000000000000000000000000000000000000000000000000000"}
+{"ts":"2026-10-07T20:26:44.220+00:00","trace_id":"fa078cf39c2840038f828f02cc5e455a","actor":"auditor_wanjiru","actor_role":"auditor","action":"auth.login","resource":"/token","outcome":"success","prev":"4c689492207d624791ba5e9026f4b3a4aa412d6ff0c8adeee38ccd733d1e633c"}
+{"ts":"2026-10-07T20:26:44.458+00:00","trace_id":"2ec04574531645dcb3bc89b0ebe1ef12","actor":"pharm_kisumu","actor_role":"partner_pharmacy","action":"auth.login","resource":"/token","outcome":"success","prev":"06daf1d7d65dfc56d6fe9baf09f7e79d4e1696d3b2d1a10e4fea846a1cceccb6"}
+{"ts":"2026-10-07T20:26:44.672+00:00","trace_id":"e918531eaf99462aa6fc4f191a90ad43","actor":"contractor_temp","actor_role":"contractor","action":"auth.login","resource":"/token","outcome":"success","prev":"aa90a4900d792ca3850d901689684a9162b02ca5b3472d252b55cb39413bb15d"}
+{"ts":"2026-10-07T20:26:44.675+00:00","trace_id":"ba5e491da6c54cdfb508faf458b552eb","actor":"-","actor_role":"-","action":"auth.token","resource":"/v1/triage","outcome":"unauthenticated","reason":"no Authorization header","prev":"ae81999529748a78ef448b5a583956bc3abfc4174e16ca2ca487bc4b5aa5fbcc"}
+{"ts":"2026-10-07T20:26:44.677+00:00","trace_id":"a7302df43991478081357deff6971de4","actor":"-","actor_role":"-","action":"auth.token","resource":"/v1/triage","outcome":"unauthenticated","reason":"DecodeError","prev":"8ed71b23d6f48d0c7ce0392cd63dc90724e730fe15040e17a95d02c9260f431d"}
+{"ts":"2026-10-07T20:26:44.678+00:00","trace_id":"9b85b8f10c394bfaa5b850fdffefc6f7","actor":"-","actor_role":"-","action":"auth.token","resource":"/v1/triage","outcome":"unauthenticated","reason":"no Authorization header","prev":"c300eba991c3316b9c5b76983c07227b25dcbae78d8a7915b024391235ee4b6a"}
+{"ts":"2026-10-07T20:26:44.698+00:00","trace_id":"w9-evidence-0001","actor":"chw_amina","actor_role":"chw","action":"triage.submit","resource":"/v1/triage","outcome":"success","payload_hash":"hmac-sha256:b1f4690b105302b45fb6322c0543721aa4d49cd5787d7ff0917b89554df4a198","payload_chars":68,"redactions":{"PHONE":1,"NATIONAL_ID":1},"hash_key_id":"k-c0d01bd1","urgency":"URGENT","safety_override":false,"prompt_version":"1.2.0","prev":"aedc5138c19b0aa9933f8b02d739d2c01c03b9e461879b62a679d6613fe6f3ea"}
+{"ts":"2026-10-07T20:26:44.700+00:00","trace_id":"w9-evidence-0002","actor":"auditor_wanjiru","actor_role":"auditor","action":"triage.submit","resource":"/v1/triage","outcome":"denied","reason":"role matrix","prev":"84911c791326ca411332aca94220e93a7612110e73f577efc9230cde15610d1a"}
+{"ts":"2026-10-07T20:26:44.701+00:00","trace_id":"w9-evidence-0003","actor":"pharm_kisumu","actor_role":"partner_pharmacy","action":"metrics.read","resource":"/v1/metrics","outcome":"denied","reason":"role matrix","prev":"f9180d491e9a2b674ce791b74d80276b7253a86cb84f2fbd74965f86fbfe3c59"}
+{"ts":"2026-10-07T20:26:44.702+00:00","trace_id":"w9-evidence-0004","actor":"contractor_temp","actor_role":"contractor","action":"triage.submit","resource":"/v1/triage","outcome":"denied","reason":"role matrix","prev":"8f41f679f33927bf4baf696b239f35bb55dd81d4bba6955d4832853b23399801"}
+{"ts":"2026-10-07T20:26:44.704+00:00","trace_id":"w9-evidence-0005","actor":"chw_amina","actor_role":"chw","action":"triage.submit","resource":"/v1/triage","outcome":"blocked","payload_hash":"hmac-sha256:8ce9ebdb18ebf43756e40015be3d9a7e238c37cf845c7009304f772277bace36","payload_chars":106,"redactions":{},"hash_key_id":"k-c0d01bd1","rule_ids":["LBL-EN","OVR-EN"],"prev":"7e18cfeb8cf881be23211e4b4b91715a63bce6e6746349786307ea85384a44a9"}
+{"ts":"2026-10-07T20:26:44.705+00:00","trace_id":"w9-evidence-0006","actor":"chw_amina","actor_role":"chw","action":"triage.submit","resource":"/v1/triage","outcome":"blocked","payload_hash":"hmac-sha256:376db875770fdfb218d3c4b0bce4da22bf1064eece6facd5300c6ed6773edc10","payload_chars":59,"redactions":{},"hash_key_id":"k-c0d01bd1","rule_ids":["OVR-SW"],"prev":"b00ecd774ea517acd995fd38635dfda2abf97753bd9ed6df4ba612a9e25c6871"}
+{"ts":"2026-10-07T20:26:44.706+00:00","trace_id":"w9-evidence-0007","actor":"chw_amina","actor_role":"chw","action":"triage.submit","resource":"/v1/triage","outcome":"blocked","payload_hash":"hmac-sha256:e0919f88a6f473769c63977077f79c2080daeb3df8a0b26730b7ccecb88ab023","payload_chars":73,"redactions":{},"hash_key_id":"k-c0d01bd1","rule_ids":["EXF-1","EXF-2"],"prev":"6c22ec96ee72f2cd3f72220e2ac7838ebb6504a1b38074d7c7005b163fee2462"}
+{"ts":"2026-10-07T20:26:44.708+00:00","trace_id":"w9-evidence-0008","actor":"auditor_wanjiru","actor_role":"auditor","action":"metrics.read","resource":"/v1/metrics","outcome":"success","prev":"fb3a2ddd5427321edc05cf495cbd1987a0c7ce4c53a4dfc969cc10af206cb37e"}
+{"ts":"2026-10-07T20:26:44.922+00:00","trace_id":"5252de9cb764429984d0bac76359884a","actor":"-","actor_role":"-","action":"auth.login","resource":"/token","outcome":"denied","payload_hash":"hmac-sha256:daacae6fcba72ed4c907bcab9a2ec7db1f3e1e43a143c718eab8e053096b2a44","payload_chars":16,"redactions":{},"hash_key_id":"k-c0d01bd1","prev":"45ed5a72f5373b7f7f036ed8161e9b0b34a99e640fd56549363504eb9a231c58"}
+[exit 0]
+
+$ python -m security.redact_then_hash --verify docs/evidence/week9/audit_sample.jsonl
+docs/evidence/week9/audit_sample.jsonl: 16 lines, chain intact
+[exit 0]
+
+## no bearer token, JWT or 7+ digit number anywhere in the sample
+$ grep -cE 'Bearer |eyJ[A-Za-z0-9_-]{10,}|[0-9]{7,}' docs/evidence/week9/audit_sample.jsonl
+1
+[exit 0 = no match]
