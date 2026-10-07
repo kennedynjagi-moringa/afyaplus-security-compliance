@@ -1,0 +1,19 @@
+# Outbound endpoints that can carry AfyaPlus data. security/transit_policy.py checks every URL here, and the
+# API refuses to start if one fails for its DEPLOY_ENV. Hostnames ending in .example are placeholders for
+# partner systems this teaching project does not have; the policy treats them like any real host.
+partners:
+  openai_api:              # live triage model (MODEL_BACKEND=openai only); messages leave Kenya here
+    url: https://api.openai.com/v1
+    environments: [dev, staging, prod]
+  azure_key_vault:         # secret_refs.yaml: JWT_SECRET, AUDIT_HASH_KEY, AUDIT_KEK
+    url: https://afyaplus-kv.vault.azure.net
+    environments: [staging, prod]
+  clinic_stock_feed:       # nightly clinics.json refresh from the county pharmacy system
+    url: https://stock-feed.benkiyetu.example/v1/clinics
+    environments: [staging, prod]
+  sms_referral_gateway:    # EMERGENCY referral SMS to the receiving clinic
+    url: https://sms.partner.example/v2/messages
+    environments: [staging, prod]
+  local_mock_partner:      # LAB EXCEPTION: loopback mock used by tests and the laptop demo, never in prod
+    url: http://127.0.0.1:8765/mock
+    environments: [dev, staging]

@@ -119,8 +119,9 @@ stages:
             displayName: Build and tag image
           - script: |
               export JWT_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+              export AUDIT_HASH_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
               scripts/deploy_stub.sh
             displayName: Deploy stub + post-deploy gates
-          - script: JWT_SECRET=teardown-only docker compose down -v
+          - script: JWT_SECRET=teardown-only AUDIT_HASH_KEY=teardown-only docker compose down -v
             displayName: Tear down
             condition: always()

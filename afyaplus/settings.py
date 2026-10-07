@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     jwt_audience: str = "afyaplus-api"
     access_token_minutes: int = Field(default=30, ge=1, le=1440)
 
+    # ---- Week 9: audit hashing key (security/redact_then_hash.py). Required, like JWT_SECRET. ----
+    audit_hash_key: SecretStr = Field(min_length=32)
+
     # ---- model backend ----
     # openai: live call. replay: recorded responses for the served prompt's SHA (fixtures/responses/), $0.
     # rules: deterministic keyword stub, $0.
@@ -50,6 +53,17 @@ class Settings(BaseSettings):
     def _blank_is_unset(cls, v):
         """docker compose passes `PROMPT_VERSION=` for an unset variable; treat blank as not set."""
         return None if isinstance(v, str) and not v.strip() else v
+
+    @model_validator(mode="after")
+    def _no_placeholder_secrets(self) -> Settings:
+        """Fail closed on the .env.example placeholders (and on test values outside dev); see secret_refs.yaml."""
+        from security.resolve_secrets import check_value
+
+        for name, value in (("JWT_SECRET", self.jwt_secret), ("AUDIT_HASH_KEY", self.audit_hash_key)):
+            problem = check_value(name, value.get_secret_value(), self.deploy_env)
+            if problem:
+                raise ValueError(problem)
+        return self
 
     @model_validator(mode="after")
     def _openai_key_required(self) -> Settings:

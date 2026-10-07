@@ -37,6 +37,7 @@ from afyaplus.models import HealthResponse, PromptInfo, TriageRequest, TriageRes
 from afyaplus.settings import get_settings
 from afyaplus.users import User
 from prompt_loader import Bundle, load_bundle
+from security.transit_policy import assert_partners_ok
 from tool_metrics import ToolMetrics
 from triage_engine import ModelUnavailable, apply_safety_rules, build_backend
 
@@ -48,7 +49,8 @@ READY_CACHE_S = 60
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    settings = get_settings()  # fails fast on missing secrets
+    settings = get_settings()  # fails closed on missing or placeholder secrets (security/resolve_secrets.py)
+    assert_partners_ok(settings.deploy_env)  # no cleartext partner URL (security/transit_policy.py)
     configure_logging("api", settings.log_dir, "api.jsonl")
     # Verifies every served prompt against prompts/pin.json; a tampered or unpinned prompt stops startup.
     bundle = load_bundle(prompt_version_override=settings.prompt_version)

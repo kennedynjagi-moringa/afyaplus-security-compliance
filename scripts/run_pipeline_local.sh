@@ -56,6 +56,7 @@ build_deploy() {
   GITHUB_OUTPUT=$out scripts/build_and_tag.sh $mode || return $?
   export IMAGE; IMAGE=$(grep '^image=' "$out" | cut -d= -f2)
   export JWT_SECRET; JWT_SECRET=$($PYTHON -c 'import secrets; print(secrets.token_urlsafe(48))')
+  export AUDIT_HASH_KEY; AUDIT_HASH_KEY=$($PYTHON -c 'import secrets; print(secrets.token_urlsafe(48))')
   scripts/deploy_stub.sh || return $?
   echo; echo "== rollback drill: same image, PROMPT_VERSION=$($PYTHON -c 'from prompt_loader import load_config; print(load_config().prompt_version)')"
   PROMPT_VERSION=$($PYTHON -c 'from prompt_loader import load_config; print(load_config().prompt_version)') \

@@ -1,0 +1,15 @@
+# Deliberately broken copy of config/partners.yaml for the failing-run evidence: a production partner on
+# cleartext http, a loopback URL marked for prod, and credentials in a URL. transit_policy must refuse all three.
+partners:
+  openai_api:
+    url: https://api.openai.com/v1
+    environments: [prod]
+  clinic_stock_feed:
+    url: http://stock-feed.benkiyetu.example/v1/clinics
+    environments: [prod]
+  local_mock_partner:
+    url: http://127.0.0.1:8765/mock
+    environments: [prod]
+  sms_referral_gateway:
+    url: https://svc_user:not-a-real-password@sms.partner.example/v2/messages
+    environments: [prod]

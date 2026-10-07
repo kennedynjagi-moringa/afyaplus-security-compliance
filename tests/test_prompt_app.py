@@ -90,6 +90,9 @@ def test_candidate_serves_its_share_of_keys_in_staging(monkeypatch):
     if not config.candidate.prompt_version:
         pytest.skip("no candidate prompt configured in this release")
     monkeypatch.setenv("DEPLOY_ENV", "staging")
+    # Week 9: test-marked secrets are refused outside dev, so staging needs non-placeholder values.
+    monkeypatch.setenv("JWT_SECRET", "staging-like-jwt-key-0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c")
+    monkeypatch.setenv("AUDIT_HASH_KEY", "staging-like-audit-key-1a2b3c4d5e6f7a8b9c0d1e2f3a4b")
     get_settings.cache_clear()
     from prompt_app import app
 

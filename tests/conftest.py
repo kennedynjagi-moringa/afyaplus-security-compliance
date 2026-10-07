@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT))
 
 os.environ.update({
     "JWT_SECRET": "test-secret-key-for-pytest-only-0123456789abcdef",
+    "AUDIT_HASH_KEY": "test-secret-audit-hash-key-for-pytest-only-0123456789",
     "MODEL_BACKEND": "replay",
     "DEPLOY_ENV": "dev",
 })

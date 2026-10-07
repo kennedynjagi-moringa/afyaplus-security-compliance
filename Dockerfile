@@ -44,6 +44,7 @@ COPY --from=builder /opt/venv /opt/venv
 # Least- to most-frequently changed.
 COPY clinics.json mcp_schema.lock.json ./
 COPY afyaplus/ afyaplus/
+COPY security/ security/
 COPY tool_metrics.py logistics_mcp_versioned.py prompt_loader.py triage_engine.py ab_prompt_flag.py prompt_app.py ./
 COPY scripts/__init__.py scripts/check_mcp_health.py scripts/mcp_stub_server.py scripts/
 COPY fixtures/ fixtures/
@@ -54,5 +55,6 @@ USER afya
 EXPOSE 8080
 HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 \
     CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2)"]
-# No secrets in the image: JWT_SECRET (and OPENAI_API_KEY for the live backend) arrive at runtime.
-CMD ["uvicorn", "prompt_app:app", "--host", "0.0.0.0", "--port", "8080"]
+# No secrets in the image: JWT_SECRET, AUDIT_HASH_KEY (and OPENAI_API_KEY for the live backend) arrive at
+# runtime. resolve_secrets fails closed (exit 1) before uvicorn starts if any required secret is unusable.
+CMD ["sh", "-c", "python -m security.resolve_secrets --check --component api --quiet && exec uvicorn prompt_app:app --host 0.0.0.0 --port 8080"]

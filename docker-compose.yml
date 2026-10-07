@@ -1,5 +1,7 @@
 # Staging stand-in: the pipeline's deploy stage (and a laptop) runs this. Nothing here is a secret;
-# JWT_SECRET comes from the environment or .env, and the run fails fast without it.
+# JWT_SECRET and AUDIT_HASH_KEY come from the environment or .env (in a real deployment, from Key Vault via
+# security/secret_refs.yaml). Compose refuses to start without them, and so does the container (resolve_secrets).
+# The triage-logs volume holds audit and API logs: on a server it sits on an encrypted disk (security/kms_twin.json).
 #   IMAGE=afyaplus-triage:1.3.0 docker compose up -d --wait
 # compose also reads .env here for these variables: check DEPLOY_ENV (the candidate never serves in dev).
 # Rollback, same image, no rebuild:
@@ -12,6 +14,7 @@ services:
     image: ${IMAGE:-afyaplus-triage:dev}
     environment:
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET (48+ random chars)}
+      AUDIT_HASH_KEY: ${AUDIT_HASH_KEY:?set AUDIT_HASH_KEY (48+ random chars)}
       MODEL_BACKEND: ${MODEL_BACKEND:-replay}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       DEPLOY_ENV: ${DEPLOY_ENV:-staging}

@@ -1,0 +1,49 @@
+{
+  "title": "AfyaPlus key and at-rest encryption twin card (Azure Key Vault and AWS KMS)",
+  "status": "DESIGN ONLY. No Azure subscription or AWS account was used this week; no key below exists yet. The local path is real and runs: security/resolve_secrets.py (environment injection) and security/encrypt_at_rest.py (envelope encryption with AUDIT_KEK).",
+  "regions": {
+    "azure": "South Africa North (nearest Azure region to Kenya; data leaves Kenya, see dpa/data_inventory.json transfers)",
+    "aws": "af-south-1 Cape Town (same note)"
+  },
+  "keys": [
+    {
+      "purpose": "Protect application secrets (JWT_SECRET, AUDIT_HASH_KEY, OPENAI_API_KEY)",
+      "azure": {"service": "Key Vault secrets, vault afyaplus-kv", "protection": "vault-managed keys (Premium SKU: HSM-backed)", "access": "RBAC role 'Key Vault Secrets User' for the API's managed identity only"},
+      "aws": {"service": "Secrets Manager", "kms_key": "alias/afyaplus-secrets (customer managed, symmetric)", "access": "key policy allows kms:Decrypt only to the API task role"},
+      "local_twin": "environment variables / /run/secrets files, resolved by security/resolve_secrets.py",
+      "rotation_days": 90
+    },
+    {
+      "purpose": "Encrypt the live data volume (docker volume triage-logs: api.jsonl, audit.jsonl, mcp_tools.jsonl, tool_metrics.db)",
+      "azure": {"service": "Managed disk server-side encryption with a customer-managed key", "key": "afyaplus-kv/keys/afyaplus-data-cmk (RSA-HSM 3072)", "access": "Disk Encryption Set identity: wrapKey/unwrapKey only"},
+      "aws": {"service": "EBS encryption", "kms_key": "alias/afyaplus-data (customer managed, symmetric)", "access": "EC2/ECS service only, via grants"},
+      "local_twin": "None: a laptop volume relies on FileVault/BitLocker. Stated as a gap, not claimed.",
+      "rotation_days": 365
+    },
+    {
+      "purpose": "Encrypt rotated audit and MCP logs archived to object storage",
+      "azure": {"service": "Blob Storage, container audit-archive, encryption scope with CMK", "key": "afyaplus-kv/keys/afyaplus-archive-kek", "extra": "immutable (WORM) policy so archived audit lines cannot be edited"},
+      "aws": {"service": "S3 bucket afyaplus-audit-archive, SSE-KMS", "kms_key": "alias/afyaplus-archive", "extra": "S3 Object Lock (compliance mode) for the retention period"},
+      "local_twin": "security/encrypt_at_rest.py: per-file AES-256-GCM data key wrapped by AUDIT_KEK; header stores kek_id and the wrapped key",
+      "rotation_days": 365
+    }
+  ],
+  "envelope_flow": [
+    "GenerateDataKey (AWS) / random 256-bit key (Azure): a fresh data key per file",
+    "Encrypt the file locally with AES-256-GCM under the data key",
+    "Wrap the data key with the KEK (KMS Encrypt / Key Vault wrapKey); store only the wrapped key with the file",
+    "To read: unwrap with the KEK (KMS Decrypt / Key Vault unwrapKey), then decrypt locally"
+  ],
+  "who_can_use_keys": {
+    "api": "read JWT_SECRET and AUDIT_HASH_KEY; no key-management rights",
+    "archive_job": "wrap with the archive KEK; cannot unwrap",
+    "dpo_and_auditor": "unwrap archive data keys for a logged access or erasure request; every unwrap is in the KMS/Key Vault audit log",
+    "nobody": "export a KEK; KMS and Key Vault HSM keys are non-exportable"
+  },
+  "in_transit": "TLS 1.2+ to every partner (security/transit_policy.py over config/partners.yaml). The API's own TLS terminates at the ingress (Azure Front Door / Application Gateway, or an AWS ALB with an ACM certificate); the container itself speaks HTTP only on the private network.",
+  "not_claimed": [
+    "No live Key Vault or KMS call was made this week",
+    "No penetration test or HSM attestation was done",
+    "Laptop and CI runner disks are outside this design"
+  ]
+}
