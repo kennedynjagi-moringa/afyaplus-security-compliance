@@ -162,6 +162,7 @@ of the tag).
 |---|---|---|---|---|---|---|---|
 | 2026-10-07 | `afyaplus-triage:1.2.0` | `sha256:d66b6d9c510ec48c254bb3a12b16fe9bc32cbc9361bc49f2063402a22a3a50ac` | `de3c39a46d3a` | 1.2.0 (`da2a2183ac50`) | none | 1.0.0 | 2026.10.0 |
 | 2026-10-07 | `afyaplus-triage:1.3.0` | `sha256:550e67da89aead0c4b4a52981b41314d8b48ed027e1dc56d4b53a28a5f56046a` | `ff0c29f8e753` | 1.2.0 (`da2a2183ac50`) | 1.3.0-candidate | 1.1.0 | 2026.10.0 |
+| 2026-10-07 | `afyaplus-triage:1.4.0` | `sha256:9b015e1ee343c1107c5211ad9e917ed8a2864d2e6135741519367c104561aa41` | `2597b1601fe9` | 1.2.0 (`da2a2183ac50`) | 1.3.0-candidate | 1.2.0 | 2026.10.0 |
 
 <!-- release-ledger:end -->
 

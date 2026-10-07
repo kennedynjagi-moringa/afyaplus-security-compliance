@@ -2,7 +2,8 @@
 
 > **Week 9 capstone, AfyaPlus series.** This is the Week 6 to 8 AfyaPlus path (the triage API and the logistics
 > MCP server) with encryption, access control, audit logging and Kenya Data Protection Act alignment added.
-> Release **v1.4.0**, built on Week 8's v1.3.1 ([baseline commit `3980b44`](#ties-to-weeks-6-to-8)).
+> Release **v1.4.0** (image `afyaplus-triage:1.4.0`, `sha256:9b015e1ee343`, [runbook ledger](runbook.md#10-release-ledger)),
+> built on Week 8's v1.3.1 ([baseline commit `3980b44`](#ties-to-weeks-6-to-8)).
 > **Spend this week: $0.** There were no model calls. The API runs on the `replay` backend, and the injection
 > guard is tested without calling a model.
 

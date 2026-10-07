@@ -1,18 +1,18 @@
-# Deliverable 1: the image fails closed without secrets, and serves with them (afyaplus-triage:1.4.0-rc.400c32608c80)
+# Deliverable 1: the image fails closed without secrets, and serves with them (afyaplus-triage:1.4.0)
 
-$ docker run --rm afyaplus-triage:1.4.0-rc.400c32608c80      # no JWT_SECRET, no AUDIT_HASH_KEY
+$ docker run --rm afyaplus-triage:1.4.0      # no JWT_SECRET, no AUDIT_HASH_KEY
+REFUSING TO START: JWT_SECRET, AUDIT_HASH_KEY unusable (fail closed, exit 1)
 secrets for component=api DEPLOY_ENV=dev
   FAIL  JWT_SECRET      required source=-      missing    
   FAIL  AUDIT_HASH_KEY  required source=-      missing    
   skip  OPENAI_API_KEY  optional source=-      missing    
-REFUSING TO START: JWT_SECRET, AUDIT_HASH_KEY unusable (fail closed, exit 1)
 [exit 1]
 
-$ docker run --rm -e JWT_SECRET=change-me-to-a-long-random-string-of-48-chars -e AUDIT_HASH_KEY=<random> -e DEPLOY_ENV=prod afyaplus-triage:1.4.0-rc.400c32608c80
+$ docker run --rm -e JWT_SECRET=change-me-to-a-long-random-string-of-48-chars -e AUDIT_HASH_KEY=<random> -e DEPLOY_ENV=prod afyaplus-triage:1.4.0
 REFUSING TO START: JWT_SECRET unusable (fail closed, exit 1)
 secrets for component=api DEPLOY_ENV=prod
   FAIL  JWT_SECRET      required source=env    placeholder value ('change-me') in prod len=45 sha256:ffcc1720
-  OK    AUDIT_HASH_KEY  required source=env    ok         len=64 sha256:6f1912fa
+  OK    AUDIT_HASH_KEY  required source=env    ok         len=64 sha256:5643447d
   skip  OPENAI_API_KEY  optional source=-      missing    
 [exit 1]
 
@@ -20,7 +20,7 @@ $ env -u JWT_SECRET docker compose config      # compose refuses before any cont
 error while interpolating services.triage.environment.JWT_SECRET: required variable JWT_SECRET is missing a value: set JWT_SECRET (48+ random chars)
 [exit 1]
 
-$ JWT_SECRET=<random> AUDIT_HASH_KEY=<random> IMAGE=afyaplus-triage:1.4.0-rc.400c32608c80 HOST_PORT=8092 docker compose up -d --wait
+$ JWT_SECRET=<random> AUDIT_HASH_KEY=<random> IMAGE=afyaplus-triage:1.4.0 HOST_PORT=8092 docker compose up -d --wait
 [exit 0]
 
 $ curl -s localhost:8092/health   # release, MCP version, environment
