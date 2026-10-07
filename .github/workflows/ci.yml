@@ -153,12 +153,14 @@ jobs:
           IMAGE: ${{ steps.build.outputs.image }}
         run: |
           export JWT_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          export AUDIT_HASH_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
           scripts/deploy_stub.sh
       - name: Rollback drill (same image, PROMPT_VERSION pinned to the active prompt)
         env:
           IMAGE: ${{ steps.build.outputs.image }}
         run: |
           export JWT_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          export AUDIT_HASH_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
           export PROMPT_VERSION="$(python -c 'from prompt_loader import load_config; print(load_config().prompt_version)')"
           docker compose up -d --wait --force-recreate
           python scripts/verify_deploy.py --url "http://127.0.0.1:$HOST_PORT"
@@ -177,4 +179,4 @@ jobs:
         run: docker compose logs --no-color | tail -100
       - name: Tear down
         if: always()
-        run: JWT_SECRET=teardown-only docker compose down -v  # compose interpolates the file even for down
+        run: JWT_SECRET=teardown-only AUDIT_HASH_KEY=teardown-only docker compose down -v  # compose interpolates the file even for down
