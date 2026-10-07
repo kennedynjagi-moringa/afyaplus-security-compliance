@@ -40,6 +40,10 @@ def test_redactor_removes_each_identifier_type(raw, label):
     assert not re.search(r"\d{7,}", text) and "eyJ" not in text and "sk-" not in text
 
 
+def test_redactor_does_not_eat_the_words_bearer_token():
+    assert redact("missing bearer token in request") == ("missing bearer token in request", {})
+
+
 def test_redactor_leaves_clinical_content_and_ids_inside_hex_alone():
     text, counts = redact("Child 2 years, fever 39.5C for 3 days, 1200 mg? trace a1b2c3d41234567e9")
     assert counts == {} and "39.5C" in text and "a1b2c3d41234567e9" in text

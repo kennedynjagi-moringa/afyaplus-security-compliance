@@ -1,0 +1,131 @@
+# MCP before (Week 8 server 1.1.0, commit 3980b44) and after (Week 9 server 1.2.0)
+
+Week 8 had no notion of a caller: every session could see every clinic.
+
+## BEFORE check_stock KSM-002 (any caller)
+{
+  "ok": true,
+  "clinic_id": "KSM-002",
+  "clinic_name": "Nyalenda Sub-County Hospital",
+  "item": "oxytocin_10iu",
+  "quantity": 35,
+  "unit": "ampoules (10 IU)",
+  "reorder_level": 20,
+  "status": "available",
+  "stock_updated": "2026-09-28",
+  "days_since_update": 9,
+  "stale": true
+}
+
+## BEFORE check_stock NRB-001 (a Nairobi clinic; works for anyone)
+{
+  "ok": true,
+  "clinic_id": "NRB-001",
+  "clinic_name": "Mbagathi Road Health Centre",
+  "item": "oxytocin_10iu",
+  "quantity": 60,
+  "unit": "ampoules (10 IU)",
+  "reorder_level": 20,
+  "status": "available",
+  "stock_updated": "2026-09-27",
+  "days_since_update": 10,
+  "stale": true
+}
+
+## BEFORE check_stock NRB-009 (unknown id: the error suggests real ids)
+{
+  "ok": false,
+  "error": {
+    "code": "UNKNOWN_CLINIC",
+    "message": "No clinic has id 'NRB-009'.",
+    "hint": "Call find_clinics for the county to get valid ids.",
+    "did_you_mean": [
+      "NRB-003",
+      "NRB-002"
+    ]
+  }
+}
+
+## BEFORE find_clinics over all 6 counties: 14 clinics, the whole registry
+['KBU-001', 'KBU-002', 'KSM-001', 'KSM-002', 'KSM-003', 'MSA-001', 'MSA-002', 'NKR-001', 'NKR-002', 'NRB-001', 'NRB-002', 'NRB-003', 'TRK-001', 'TRK-002']
+
+Week 9: AFYA_CALLER=chw_amina AFYA_CALLER_ROLE=chw (set by the host that spawns the server)
+
+## AFTER check_stock KSM-002 as chw: the smallest useful answer
+{
+  "ok": true,
+  "clinic_id": "KSM-002",
+  "item": "oxytocin_10iu",
+  "status": "available",
+  "stale": true
+}
+
+## AFTER check_stock NRB-001 as chw: outside her allowlist, same answer as an unknown id
+{
+  "ok": false,
+  "error": {
+    "code": "UNKNOWN_CLINIC",
+    "message": "No clinic with id 'NRB-001' is available to you.",
+    "hint": "Call find_clinics for the county to get the ids you can use.",
+    "did_you_mean": [
+      "KSM-001"
+    ]
+  }
+}
+
+## AFTER check_stock NRB-009 as chw: suggestions only from her own clinics
+{
+  "ok": false,
+  "error": {
+    "code": "UNKNOWN_CLINIC",
+    "message": "No clinic with id 'NRB-009' is available to you.",
+    "hint": "Call find_clinics for the county to get the ids you can use.",
+    "did_you_mean": []
+  }
+}
+
+## AFTER find_clinics over all 6 counties as chw: 3 clinics
+['KSM-001', 'KSM-002', 'KSM-003']
+
+## AFTER instruction smuggled into an argument
+{
+  "ok": false,
+  "error": {
+    "code": "INPUT_REJECTED",
+    "message": "An argument looks like an instruction, not a value.",
+    "hint": "Pass only a county, service, clinic id or stock item.",
+    "rule_ids": [
+      "OVR-EN"
+    ]
+  }
+}
+
+## AFTER check_stock KSM-002 as dispatcher (logistics role: exact counts)
+{
+  "ok": true,
+  "clinic_id": "KSM-002",
+  "clinic_name": "Nyalenda Sub-County Hospital",
+  "item": "oxytocin_10iu",
+  "quantity": 35,
+  "unit": "ampoules (10 IU)",
+  "reorder_level": 20,
+  "status": "available",
+  "stock_updated": "2026-09-28",
+  "days_since_update": 9,
+  "stale": true
+}
+
+## AFTER check_stock with no caller identity (unknown role)
+{
+  "ok": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Role '<none>' may not call check_stock.",
+    "hint": "Tools are granted per role in security/rbac.py; ask an administrator."
+  }
+}
+
+## AFTER 5 calls with MCP_MAX_CALLS=3 (per-session budget)
+['ok', 'ok', 'ok', 'CALL_BUDGET_EXCEEDED', 'CALL_BUDGET_EXCEEDED']
+
+wrote docs/evidence/week9/mcp_check_stock_sample.json

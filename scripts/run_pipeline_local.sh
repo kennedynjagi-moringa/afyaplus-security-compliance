@@ -35,6 +35,7 @@ stage() {   # stage <name> <command...>: run, tee, and stop the pipeline if it f
 lint_test() {
   .venv/bin/ruff check . && \
   if [[ "$REF" == v* ]]; then $PYTHON check_prompt_pin.py --tag "$REF"; else $PYTHON check_prompt_pin.py; fi && \
+  PYTHON=$PYTHON scripts/security_checks.sh && \
   JWT_SECRET=local-pipeline-not-a-secret-0123456789abcdef $PYTHON -m pytest -q
 }
 eval_gate() {

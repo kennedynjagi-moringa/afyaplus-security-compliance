@@ -3,7 +3,7 @@
 #   lint-test ──┬── eval ────────┬── build-deploy
 #               └── mcp-health ──┘
 #
-# - lint-test     ruff, release alignment (check_prompt_pin.py), pytest (offline)
+# - lint-test     ruff, release alignment (check_prompt_pin.py), Week 9 security checks, pytest (offline)
 # - eval          golden-set regression gate on the active + candidate prompts (replay of live recordings, $0)
 # - mcp-health    stdio handshake probe of the MCP server: version, required tools, schema lock, smoke call
 # - build-deploy  docker build + tag, compose up on the runner (staging stand-in), verify versions, MCP probe
@@ -54,6 +54,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0             # Week 9: the secret scan reads every commit
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -69,6 +71,8 @@ jobs:
           else
             python check_prompt_pin.py
           fi
+      - name: Security checks (Week 9)
+        run: PYTHON=python scripts/security_checks.sh
       - name: Unit tests
         env:
           JWT_SECRET: ci-only-not-a-secret-${{ github.run_id }}-0123456789abcdef

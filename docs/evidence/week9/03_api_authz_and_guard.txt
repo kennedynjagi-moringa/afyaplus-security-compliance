@@ -1,0 +1,143 @@
+uvicorn prompt_app:app on http://127.0.0.1:8091 (MODEL_BACKEND=replay, LOG_DIR=<tmp>); tokens shown as <token:user>
+
+# Authentication is still required (Week 6 JWT), before anything else runs
+
+## no token
+POST /v1/triage -> HTTP 401
+{
+  "detail": "Invalid or expired token. Request a new one from POST /token."
+}
+
+## forged token
+POST /v1/triage -> HTTP 401
+{
+  "detail": "Invalid or expired token. Request a new one from POST /token."
+}
+
+## override text but no token: still 401, the guard never sees it
+POST /v1/triage -> HTTP 401
+{
+  "detail": "Invalid or expired token. Request a new one from POST /token."
+}
+
+# Authorisation: the role matrix (security/rbac.py), default deny
+
+## chw_amina (chw) -> triage.submit allowed
+POST /v1/triage -> HTTP 200
+{
+  "request_id": "w9-evidence-0001",
+  "urgency": "URGENT",
+  "symptoms": [
+    "homa"
+  ],
+  "danger_signs": [],
+  "rationale": "Keyword rules matched 0 danger sign(s) and 1 symptom keyword(s).",
+  "recommended_action": "Arrange for the patient to see a clinician within 24 hours and follow up by phone.",
+  "safety_override": false,
+  "prompt_version": "1.2.0",
+  "prompt_sha256": "da2a2183ac50a4f40eaf0b8ab07c2cae2cca44843faf6ff0a53bfe8a84ae7cbc",
+  "arm": "active",
+  "model": "keyword-rules",
+  "backend": "rules(replay-miss)",
+  "latency_ms": 15,
+  "disclaimer": "Operational triage support for community health workers, not a diagnosis. A qualified clinician makes the final decision."
+}
+
+## auditor_wanjiru (auditor, an operations role) -> triage.submit denied
+POST /v1/triage -> HTTP 403
+{
+  "detail": "Role 'auditor' is not allowed to triage.submit."
+}
+
+## pharm_kisumu (partner_pharmacy) -> metrics.read denied
+GET /v1/metrics -> HTTP 403
+{
+  "detail": "Role 'partner_pharmacy' is not allowed to metrics.read."
+}
+
+## contractor_temp (role 'contractor' is not in the matrix) -> denied everywhere
+POST /v1/triage -> HTTP 403
+{
+  "detail": "Role 'contractor' is not allowed to triage.submit."
+}
+
+# Injection guard: 400 before any prompt is chosen or model is called
+
+## override + a real emergency: 400, and the code danger-sign rules still flag the emergency
+POST /v1/triage -> HTTP 400
+{
+  "detail": "The message contains instruction-like text, so it was not sent to the triage model. Describe only the patient's symptoms and send it again.",
+  "code": "INPUT_REJECTED",
+  "rule_ids": [
+    "LBL-EN",
+    "OVR-EN"
+  ],
+  "request_id": "w9-evidence-0005",
+  "safety_net": {
+    "urgency": "EMERGENCY",
+    "danger_signs": [
+      "convulsions"
+    ],
+    "recommended_action": "Refer immediately to the nearest facility with emergency care; call the county ambulance if available.",
+    "source": "code danger-sign rules, no model"
+  },
+  "disclaimer": "Operational triage support for community health workers, not a diagnosis. A qualified clinician makes the final decision."
+}
+
+## Swahili override
+POST /v1/triage -> HTTP 400
+{
+  "detail": "The message contains instruction-like text, so it was not sent to the triage model. Describe only the patient's symptoms and send it again.",
+  "code": "INPUT_REJECTED",
+  "rule_ids": [
+    "OVR-SW"
+  ],
+  "request_id": "w9-evidence-0006",
+  "safety_net": null,
+  "disclaimer": "Operational triage support for community health workers, not a diagnosis. A qualified clinician makes the final decision."
+}
+
+## exfiltration attempt
+POST /v1/triage -> HTTP 400
+{
+  "detail": "The message contains instruction-like text, so it was not sent to the triage model. Describe only the patient's symptoms and send it again.",
+  "code": "INPUT_REJECTED",
+  "rule_ids": [
+    "EXF-1",
+    "EXF-2"
+  ],
+  "request_id": "w9-evidence-0007",
+  "safety_net": null,
+  "disclaimer": "Operational triage support for community health workers, not a diagnosis. A qualified clinician makes the final decision."
+}
+
+## model calls recorded by /v1/metrics after 3 guarded requests and 1 allowed one: 1
+
+# Audit trail written by the server (audit.jsonl, 16 lines), copied to docs/evidence/week9/audit_sample.jsonl
+
+{"ts":"2026-10-07T20:19:52.032+00:00","trace_id":"89e4dfd3968449c1b2faf9066aa75fa3","actor":"chw_amina","actor_role":"chw","action":"auth.login","resource":"/token","outcome":"success","prev":"0000000000000000000000000000000000000000000000000000000000000000"}
+{"ts":"2026-10-07T20:19:52.251+00:00","trace_id":"7488e37d2c5449f1832575210966fab6","actor":"auditor_wanjiru","actor_role":"auditor","action":"auth.login","resource":"/token","outcome":"success","prev":"a273a9543c19a7cfa53af04c121292bb36d41848e6637790c31b3e6c639de83e"}
+{"ts":"2026-10-07T20:19:52.467+00:00","trace_id":"e13ad70105034c84a97aa852a7c4173d","actor":"pharm_kisumu","actor_role":"partner_pharmacy","action":"auth.login","resource":"/token","outcome":"success","prev":"2daf1907dcc342ab1472ddaed1b8d98b854d2eefb138f4fbbb7c137b50fcc5d3"}
+{"ts":"2026-10-07T20:19:52.683+00:00","trace_id":"5631ab80020b4dcea595a939af791299","actor":"contractor_temp","actor_role":"contractor","action":"auth.login","resource":"/token","outcome":"success","prev":"6044424d30a7f313061edea58cfa4802e48a516f5e6f0ffdebd5715aa4f20fdc"}
+{"ts":"2026-10-07T20:19:52.686+00:00","trace_id":"8591964df5164548932b30b5bd3a2137","actor":"-","actor_role":"-","action":"auth.token","resource":"/v1/triage","outcome":"unauthenticated","reason":"no Authorization header","prev":"79056c7d45217ecbc5abcc81089edcac2338e255db0f5caf0eee4a1161930605"}
+{"ts":"2026-10-07T20:19:52.687+00:00","trace_id":"dfedf41d91a243ec84573ac6bac799e8","actor":"-","actor_role":"-","action":"auth.token","resource":"/v1/triage","outcome":"unauthenticated","reason":"DecodeError","prev":"28830d9352e180dc4dc7e4176f8b4e6c581c5531aafdd64e660bcac5ecea7e34"}
+{"ts":"2026-10-07T20:19:52.689+00:00","trace_id":"d1566f289ca44e55a58cbc8002bb5b3b","actor":"-","actor_role":"-","action":"auth.token","resource":"/v1/triage","outcome":"unauthenticated","reason":"no Authorization header","prev":"304b0951bf7488744fc7e8d04cc9c2b9154c4f697fd2fc4319f6caf647c85d22"}
+{"ts":"2026-10-07T20:19:52.707+00:00","trace_id":"w9-evidence-0001","actor":"chw_amina","actor_role":"chw","action":"triage.submit","resource":"/v1/triage","outcome":"success","payload_hash":"hmac-sha256:a058f86a220094bc575904939e5995b64b691c5868d43bc6da12b37622ed0c01","payload_chars":68,"redactions":{"PHONE":1,"NATIONAL_ID":1},"hash_key_id":"k-dcf09b54","urgency":"URGENT","safety_override":false,"prompt_version":"1.2.0","prev":"2074e9305bfe521f1d85bcef9f3a9b2e0ce037d7ab6bd830ea11bb3873df260d"}
+{"ts":"2026-10-07T20:19:52.709+00:00","trace_id":"w9-evidence-0002","actor":"auditor_wanjiru","actor_role":"auditor","action":"triage.submit","resource":"/v1/triage","outcome":"denied","reason":"role matrix","prev":"6d1c4359b8c010f9a09e1d18875837d252b645ee247d8309d5e82d4cadd719fe"}
+{"ts":"2026-10-07T20:19:52.710+00:00","trace_id":"w9-evidence-0003","actor":"pharm_kisumu","actor_role":"partner_pharmacy","action":"metrics.read","resource":"/v1/metrics","outcome":"denied","reason":"role matrix","prev":"330564a36cddb32502f437e55be43705b47c02bee8523ec4c436b8df3b6a4bca"}
+{"ts":"2026-10-07T20:19:52.711+00:00","trace_id":"w9-evidence-0004","actor":"contractor_temp","actor_role":"contractor","action":"triage.submit","resource":"/v1/triage","outcome":"denied","reason":"role matrix","prev":"3af3063aeb712fc3dacc4363381e0a2aa2d03d2cffe6d3559f8a00ff23574535"}
+{"ts":"2026-10-07T20:19:52.713+00:00","trace_id":"w9-evidence-0005","actor":"chw_amina","actor_role":"chw","action":"triage.submit","resource":"/v1/triage","outcome":"blocked","payload_hash":"hmac-sha256:d6db1fb2699d44310fc20dc2d537db0871654590384d9bb7bf4a3a47809734e9","payload_chars":106,"redactions":{},"hash_key_id":"k-dcf09b54","rule_ids":["LBL-EN","OVR-EN"],"prev":"fa6c20711d50ca840bf0ba1883183ae8f15fee3195eb6f62d314101833644951"}
+{"ts":"2026-10-07T20:19:52.714+00:00","trace_id":"w9-evidence-0006","actor":"chw_amina","actor_role":"chw","action":"triage.submit","resource":"/v1/triage","outcome":"blocked","payload_hash":"hmac-sha256:7f89f7ae2145b4deddcd9c45470c1f93662107f3dff6c14af8f917241a0115f3","payload_chars":59,"redactions":{},"hash_key_id":"k-dcf09b54","rule_ids":["OVR-SW"],"prev":"d0418051e448af1a72223318492ab00326bcf48bd2fb3b917acb2ef4a155b4bd"}
+{"ts":"2026-10-07T20:19:52.715+00:00","trace_id":"w9-evidence-0007","actor":"chw_amina","actor_role":"chw","action":"triage.submit","resource":"/v1/triage","outcome":"blocked","payload_hash":"hmac-sha256:87d9ce04917061f162b3c902b0ccb0c5201bbd45d1c865c04b33da458aaba64a","payload_chars":73,"redactions":{},"hash_key_id":"k-dcf09b54","rule_ids":["EXF-1","EXF-2"],"prev":"5e418d1f45e90e8758c9e147caafafc477a13bc7e40b0eafc4c3818d5498ff2f"}
+{"ts":"2026-10-07T20:19:52.716+00:00","trace_id":"w9-evidence-0008","actor":"auditor_wanjiru","actor_role":"auditor","action":"metrics.read","resource":"/v1/metrics","outcome":"success","prev":"3f32da76ef2549730db167c18f634e5b4740213bcbc3f2d4a503b11602739df7"}
+{"ts":"2026-10-07T20:19:52.932+00:00","trace_id":"70f13c7bdcb242628d0793dbf9562827","actor":"-","actor_role":"-","action":"auth.login","resource":"/token","outcome":"denied","payload_hash":"hmac-sha256:4c8131e8ef0e388bc5bb7b916c6c58eabbe4f3e7e06cdf3605ca84c7fa4cfa89","payload_chars":16,"redactions":{},"hash_key_id":"k-dcf09b54","prev":"a11fbc6db847f60d9987eba52b484f27e0e429d495fb8263052a41b0ec15f83f"}
+
+# Searching every log file the server wrote (api.jsonl, audit.jsonl)
+  raw bearer token of chw_amina          found 0 times
+  raw bearer token of auditor_wanjiru    found 0 times
+  raw bearer token of pharm_kisumu       found 0 times
+  raw bearer token of contractor_temp    found 0 times
+  national ID 28465731                   found 0 times
+  phone 0712 345 678                     found 0 times
+  password typed as username             found 0 times
+  message text 'homa kali'               found 0 times

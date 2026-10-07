@@ -6,6 +6,29 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-07
+
+Week 9 security release. Ships the same prompts as 1.3.1 (1.2.0 active `da2a2183ac50`, waiver until 2026-11-30;
+1.3.0-candidate `20f536db4193` on 10% of staging keys) and **MCP afyaplus-logistics 1.2.0**. Tool input schemas
+are unchanged (the lock differs only in its version), but `check_stock` answers field roles with status only.
+Rollback: image `afyaplus-triage:1.3.1` (it needs no `AUDIT_HASH_KEY`), or the same levers as before.
+
+### Added
+- Encryption: HTTPS-only transit policy over `config/partners.yaml`, enforced at startup; `security/secret_refs.yaml`
+  and `resolve_secrets.py` (the container fails closed before uvicorn); envelope encryption for archived logs
+  (`security/encrypt_at_rest.py`) with the Key Vault / KMS twin card; `security/check_gitignore.py`.
+- Access control: role matrix `security/rbac.py` (default deny; partner vs operations tools) behind the JWT;
+  injection guard returning 400 before any model call; MCP caller identity, clinic allowlist, minimal responses,
+  argument guard and a per-session call budget; corpus pins for data and policy files.
+- Logging: redact-then-hash audit trail (`logs/audit.jsonl`, `logs/audit_mcp.jsonl`), hash-chained.
+- Kenya DPA: data inventory, retention rules, sweeper with append-only deletion records, rights lookup stub.
+- Users `pharm_kisumu`, `ops_kamau`, `dpo_njeri`, and `contractor_temp` (an unknown role, denied everywhere).
+
+### Changed
+- `AUDIT_HASH_KEY` is now required, like `JWT_SECRET`. Placeholder and test-marked secrets are refused outside dev.
+- Failed logins no longer log the attempted username (it is hashed in the audit line instead).
+- Smoke traffic expects the injection-test golden case (GS01) to get a 400.
+
 ## [1.3.1] - 2026-10-07
 
 Ships exactly what 1.3.0 ships: prompt 1.2.0 active (`da2a2183ac50`, waiver until 2026-11-30), 1.3.0-candidate

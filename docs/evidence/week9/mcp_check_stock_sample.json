@@ -1,0 +1,59 @@
+{
+  "tool": "check_stock",
+  "arguments": {
+    "clinic_id": "KSM-002",
+    "item": "oxytocin_10iu"
+  },
+  "before_week8_any_caller": {
+    "ok": true,
+    "clinic_id": "KSM-002",
+    "clinic_name": "Nyalenda Sub-County Hospital",
+    "item": "oxytocin_10iu",
+    "quantity": 35,
+    "unit": "ampoules (10 IU)",
+    "reorder_level": 20,
+    "status": "available",
+    "stock_updated": "2026-09-28",
+    "days_since_update": 9,
+    "stale": true
+  },
+  "after_week9_chw": {
+    "ok": true,
+    "clinic_id": "KSM-002",
+    "item": "oxytocin_10iu",
+    "status": "available",
+    "stale": true
+  },
+  "after_week9_dispatcher": {
+    "ok": true,
+    "clinic_id": "KSM-002",
+    "clinic_name": "Nyalenda Sub-County Hospital",
+    "item": "oxytocin_10iu",
+    "quantity": 35,
+    "unit": "ampoules (10 IU)",
+    "reorder_level": 20,
+    "status": "available",
+    "stock_updated": "2026-09-28",
+    "days_since_update": 9,
+    "stale": true
+  },
+  "after_week9_outside_allowlist": {
+    "ok": false,
+    "error": {
+      "code": "UNKNOWN_CLINIC",
+      "message": "No clinic with id 'NRB-001' is available to you.",
+      "hint": "Call find_clinics for the county to get the ids you can use.",
+      "did_you_mean": [
+        "KSM-001"
+      ]
+    }
+  },
+  "after_week9_no_identity": {
+    "ok": false,
+    "error": {
+      "code": "FORBIDDEN",
+      "message": "Role '<none>' may not call check_stock.",
+      "hint": "Tools are granted per role in security/rbac.py; ask an administrator."
+    }
+  }
+}

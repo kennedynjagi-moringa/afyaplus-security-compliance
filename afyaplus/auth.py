@@ -59,7 +59,7 @@ def _token_or_401(request: Request, token: Annotated[str | None, Depends(oauth2_
     """Bearer token or 401, with an audit line when the header is missing."""
     if not token:
         audit(actor="-", actor_role="-", action="auth.token", resource=request.url.path, outcome="unauthenticated",
-              reason="missing bearer token")
+              reason="no Authorization header")
         raise _UNAUTHORISED
     return token
 
