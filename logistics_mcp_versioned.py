@@ -69,6 +69,7 @@ from afyaplus.logging_setup import configure_logging, trace_id_var
 from security import rbac
 from security.corpus_pins import verify_pins
 from security.injection_guard import scan_fields
+from security.redact_then_hash import AuditTrail
 from tool_metrics import ToolMetrics
 
 SERVER_NAME = "afyaplus-logistics"
@@ -81,6 +82,8 @@ LOG_DIR = Path(os.environ.get("LOG_DIR", PROJECT_ROOT / "logs"))
 
 trace_id_var.set(os.environ.get("AFYA_TRACE_ID", "-"))
 log = configure_logging("mcp_server", LOG_DIR, "mcp_tools.jsonl", stream=sys.stderr)
+# Fails closed: no AUDIT_HASH_KEY (or a short one) means no server (security/secret_refs.yaml, component mcp).
+audit_trail = AuditTrail(LOG_DIR / "audit_mcp.jsonl", os.environ.get("AUDIT_HASH_KEY", "").encode())
 metrics = ToolMetrics()
 # The health probe deliberately makes a bad call (error contract check). Count probe traffic under its own
 # component so it never inflates the production error rate the canary gate reads.
@@ -227,6 +230,12 @@ class LoggedFastMCP(FastMCP):
             "actor_role": caller.role or "-", "arguments": arguments, **outcome, "latency_ms": latency_ms,
         })
         metrics.record(METRICS_COMPONENT, name, SERVER_VERSION, outcome["ok"], latency_ms, outcome.get("error_code"))
+        code = outcome.get("error_code")
+        audit_trail.record(
+            actor=caller.subject, actor_role=caller.role, action=f"mcp.{name}", resource=f"mcp://{SERVER_NAME}/{name}",
+            outcome="success" if outcome["ok"] else "denied" if code in {"FORBIDDEN", "CALL_BUDGET_EXCEEDED"}
+            else "blocked" if code == "INPUT_REJECTED" else "error",
+            trace_id=trace_id_var.get(), payload=json.dumps(arguments, sort_keys=True, default=str), error_code=code)
         return result
 
     async def read_resource(self, uri):

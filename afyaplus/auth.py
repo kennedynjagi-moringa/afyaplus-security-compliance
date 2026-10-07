@@ -15,9 +15,10 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
 import jwt
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
+from afyaplus.audit import audit
 from afyaplus.models import TokenResponse
 from afyaplus.settings import get_settings
 from afyaplus.users import User, authenticate, get_user
@@ -25,7 +26,7 @@ from security import rbac
 
 log = logging.getLogger("api")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 router = APIRouter(tags=["auth"])
 
 _UNAUTHORISED = HTTPException(
@@ -54,7 +55,16 @@ def create_access_token(user: User) -> tuple[str, int]:
     return token, expires_in
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
+def _token_or_401(request: Request, token: Annotated[str | None, Depends(oauth2_scheme)]) -> str:
+    """Bearer token or 401, with an audit line when the header is missing."""
+    if not token:
+        audit(actor="-", actor_role="-", action="auth.token", resource=request.url.path, outcome="unauthenticated",
+              reason="missing bearer token")
+        raise _UNAUTHORISED
+    return token
+
+
+def get_current_user(request: Request, token: Annotated[str, Depends(_token_or_401)]) -> User:
     settings = get_settings()
     try:
         claims = jwt.decode(
@@ -65,14 +75,16 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
             issuer=settings.jwt_issuer,
             options={"require": ["exp", "iat", "sub", "iss", "aud"]},
         )
-    except jwt.ExpiredSignatureError:
-        log.info("auth_rejected", extra={"reason": "expired"})
-        raise _UNAUTHORISED from None
-    except jwt.InvalidTokenError as exc:
-        log.info("auth_rejected", extra={"reason": type(exc).__name__})
+    except jwt.InvalidTokenError as exc:  # includes ExpiredSignatureError
+        reason = "expired" if isinstance(exc, jwt.ExpiredSignatureError) else type(exc).__name__
+        log.info("auth_rejected", extra={"reason": reason})
+        audit(actor="-", actor_role="-", action="auth.token", resource=request.url.path, outcome="unauthenticated",
+              reason=reason)
         raise _UNAUTHORISED from None
     user = get_user(claims["sub"])
     if user is None:  # account removed after the token was issued
+        audit(actor="-", actor_role="-", action="auth.token", resource=request.url.path, outcome="unauthenticated",
+              reason="unknown subject")
         raise _UNAUTHORISED from None
     # Scopes come from the user store, not the token, so revoking a scope takes effect immediately.
     return user
@@ -97,9 +109,11 @@ def require_scopes(*needed: str):
 
 def require_action(action: str):
     """Authorisation on top of authentication: a valid JWT AND a role the matrix allows (security/rbac.py)."""
-    def checker(user: CurrentUser) -> User:
+    def checker(request: Request, user: CurrentUser) -> User:
         if not rbac.is_allowed(user.role, action):
             log.info("auth_forbidden", extra={"user": user.username, "role": user.role, "action": action})
+            audit(actor=user.username, actor_role=user.role, action=action, resource=request.url.path,
+                  outcome="denied", reason="role matrix")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Role '{user.role}' is not allowed to {action}.",
@@ -113,7 +127,10 @@ def require_action(action: str):
 def login(form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> TokenResponse:
     user = authenticate(form.username, form.password)
     if user is None:
-        log.info("login_failed", extra={"username": form.username[:64]})
+        # The attempted username is hashed, never logged: people type passwords into the username box.
+        log.info("login_failed")
+        audit(actor="-", actor_role="-", action="auth.login", resource="/token", outcome="denied",
+              payload=form.username[:64])
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password.",
@@ -121,4 +138,5 @@ def login(form: Annotated[OAuth2PasswordRequestForm, Depends()]) -> TokenRespons
         )
     token, expires_in = create_access_token(user)
     log.info("login_ok", extra={"user": user.username, "role": user.role})
+    audit(actor=user.username, actor_role=user.role, action="auth.login", resource="/token", outcome="success")
     return TokenResponse(access_token=token, expires_in=expires_in, role=user.role, scopes=list(user.scopes))

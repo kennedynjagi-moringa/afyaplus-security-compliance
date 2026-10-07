@@ -93,7 +93,9 @@ stages:
             inputs: {versionSpec: "$(pythonVersion)"}
           - script: pip install -r requirements.txt
             displayName: Install
-          - script: python scripts/check_mcp_health.py --target ${{ parameters.mcpTarget }}
+          - script: |
+              export AUDIT_HASH_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+              python scripts/check_mcp_health.py --target ${{ parameters.mcpTarget }}
             displayName: Probe MCP server (${{ parameters.mcpTarget }})
           - ${{ if eq(parameters.demoFailure, 'mcp') }}:
               - script: python scripts/check_mcp_health.py --target stub

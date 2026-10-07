@@ -34,6 +34,7 @@ from fastapi.responses import JSONResponse
 
 from ab_prompt_flag import choose_prompt, effective_percent
 from afyaplus import SERVICE_NAME
+from afyaplus.audit import audit
 from afyaplus.auth import require_action
 from afyaplus.auth import router as auth_router
 from afyaplus.logging_setup import configure_logging, trace_id_var
@@ -57,7 +58,7 @@ READY_CACHE_S = 60
 async def lifespan(app: FastAPI):
     settings = get_settings()  # fails closed on missing or placeholder secrets (security/resolve_secrets.py)
     assert_partners_ok(settings.deploy_env)  # no cleartext partner URL (security/transit_policy.py)
-    verify_pins(RUNTIME_FILES)  # clinic data, allowlist, configs, golden set unchanged since review (security/corpus_pins.py)
+    verify_pins(RUNTIME_FILES)  # clinic data, allowlist and configs unchanged since review (security/corpus_pins.py)
     configure_logging("api", settings.log_dir, "api.jsonl")
     # Verifies every served prompt against prompts/pin.json; a tampered or unpinned prompt stops startup.
     bundle = load_bundle(prompt_version_override=settings.prompt_version)
@@ -188,6 +189,8 @@ def triage_case(
     settings = get_settings()
     guard = scan(body.message)
     if guard.blocked:  # before the prompt is chosen and before any model call
+        audit(actor=user.username, actor_role=user.role, action="triage.submit", resource="/v1/triage",
+              outcome="blocked", payload=body.message, rule_ids=guard.rule_ids)
         raise InputRejected(guard.rule_ids, detect_danger_signs(body.message))
     bundle: Bundle = request.app.state.bundle
     metrics: ToolMetrics = request.app.state.metrics
@@ -200,6 +203,8 @@ def triage_case(
     except ModelUnavailable:
         metrics.record("triage", "triage", prompt.version, False, (time.perf_counter() - started) * 1000,
                        "MODEL_UNAVAILABLE", assignment.arm)
+        audit(actor=user.username, actor_role=user.role, action="triage.submit", resource="/v1/triage",
+              outcome="error", payload=body.message, reason="model unavailable")
         raise
     result, override = apply_safety_rules(body, answer.output)
     latency_ms = int((time.perf_counter() - started) * 1000)
@@ -211,6 +216,9 @@ def triage_case(
         "input_tokens": answer.usage.input_tokens, "output_tokens": answer.usage.output_tokens,
         "cost_usd": round(answer.usage.cost_usd, 8), "release": bundle.config.release,
     })
+    audit(actor=user.username, actor_role=user.role, action="triage.submit", resource="/v1/triage",
+          outcome="success", payload=body.message, urgency=result.urgency, safety_override=override,
+          prompt_version=prompt.version)
     response.headers["X-Prompt-Version"] = prompt.version
     response.headers["X-Prompt-SHA"] = prompt.short_sha
     response.headers["X-Prompt-Arm"] = assignment.arm
@@ -229,4 +237,5 @@ def metrics_summary(
     since: float = 0.0,
 ) -> dict:
     metrics: ToolMetrics = request.app.state.metrics
+    audit(actor=user.username, actor_role=user.role, action="metrics.read", resource="/v1/metrics", outcome="success")
     return {"release": request.app.state.bundle.config.release, "since": since, "rows": metrics.summary(since=since)}

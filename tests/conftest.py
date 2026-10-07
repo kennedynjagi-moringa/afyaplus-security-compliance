@@ -27,8 +27,11 @@ def isolated_runtime(tmp_path, monkeypatch):
     monkeypatch.setenv("LOG_DIR", str(tmp_path / "logs"))
     monkeypatch.setenv("TOOL_METRICS_DB", str(tmp_path / "metrics.db"))
     monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+    from afyaplus.audit import get_audit_trail
     from afyaplus.settings import get_settings
 
     get_settings.cache_clear()
+    get_audit_trail.cache_clear()
     yield
     get_settings.cache_clear()
+    get_audit_trail.cache_clear()
