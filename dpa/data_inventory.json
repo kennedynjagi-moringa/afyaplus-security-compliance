@@ -1,0 +1,105 @@
+{
+  "title": "AfyaPlus data inventory (triage API + logistics MCP server), Kenya Data Protection Act 2019 alignment",
+  "version": "2026-10-07",
+  "controller": "BenkiYetu (operator of the AfyaPlus deployment), teaching scenario",
+  "legal_status": "TEACHING ARTEFACT. Section references are for orientation only and every lawful_basis value is a teaching label. Legal review pending: no lawyer or Data Protection Officer has reviewed this file.",
+  "regulator": {
+    "name": "Office of the Data Protection Commissioner (ODPC), Kenya",
+    "registration": "NOT REGISTERED. This teaching deployment holds no ODPC registration, certificate or approval number, and none is claimed anywhere in this repository.",
+    "dpia": "Not done. Processing health data at scale is the kind of processing the Act expects a DPIA for (s.31). A DPIA is an open action in manager_brief.md."
+  },
+  "categories": [
+    {
+      "id": "triage_messages",
+      "what": "Free-text symptom description typed by a CHW, plus patient_age_years and county",
+      "data_subjects": ["patients (often children)", "CHWs (as author)"],
+      "personal_data": true,
+      "sensitive": "yes: health data, a sensitive category under the Act (s.2 definitions, s.44 to s.46)",
+      "fields": ["message", "patient_age_years", "county", "request_id", "chw username"],
+      "purpose": "Decide the urgency of a household case and the next action; sample for clinical quality review",
+      "lawful_basis_teaching_label": "TEACHING LABEL (legal review pending): public-interest community health task, with the household's informed agreement at the visit",
+      "where": [
+        {"location": "API process memory", "persisted": false, "note": "prompt_app.py does not write message text to any file or database"},
+        {"location": "OpenAI API (United States)", "persisted": "per the provider's API data-retention terms (verify before go-live)", "note": "ONLY when MODEL_BACKEND=openai. The replay and rules backends send nothing out. This is a cross-border transfer (s.48 to s.50)."},
+        {"location": "clinical QA sample store (store: triage_messages)", "persisted": true, "note": "In this repository a static synthetic fixture: fixtures/dpa/triage_messages.jsonl. Swept by dpa/retention_sweeper.py."}
+      ],
+      "retention": "dpa/retention.json#triage_messages",
+      "access": "No API route returns stored messages. QA store: dpo role via dpa/rights_lookup.py",
+      "protection": ["HTTPS only to partners (security/transit_policy.py)", "encrypted volume (security/kms_twin.json)", "never written to logs: the audit line holds a keyed hash of the redacted text (security/redact_then_hash.py)", "injection guard before any model call (security/injection_guard.py)"]
+    },
+    {
+      "id": "identifiers",
+      "what": "Who did what: staff usernames and roles, JWT claims, request/trace ids, routing keys (device ids)",
+      "data_subjects": ["CHWs", "dispatchers", "partner pharmacy staff", "operations staff"],
+      "personal_data": true,
+      "sensitive": "no",
+      "fields": ["sub (username)", "role", "jti", "request_id / trace_id", "X-Routing-Key"],
+      "purpose": "Authentication, authorisation, accountability for each decision",
+      "lawful_basis_teaching_label": "TEACHING LABEL (legal review pending): employment / service contract with staff and legitimate interest in securing a health service",
+      "where": [
+        {"location": "JWT bearer token", "persisted": false, "note": "30-minute lifetime; never logged (tests/test_audit_logging.py checks every log file)"},
+        {"location": "afyaplus/users.py", "persisted": true, "note": "demo users with bcrypt hashes only; an identity provider in production"},
+        {"location": "logs/audit.jsonl, logs/api.jsonl", "persisted": true, "note": "username and role, see audit_logs"}
+      ],
+      "patient_identifiers": "None are collected by design: no name, no national ID, no phone. If a CHW types one into a message, redact_then_hash.py removes it before anything is logged, and the redaction count shows it happened.",
+      "retention": "dpa/retention.json#audit_logs and #api_logs",
+      "access": "security/rbac.py",
+      "protection": ["JWT with pinned HS256, issuer and audience (afyaplus/auth.py)", "JWT_SECRET from secret_refs.yaml, fail-closed boot"]
+    },
+    {
+      "id": "mcp_queries",
+      "what": "Tool calls to the logistics MCP server: county, service, clinic_id, stock item, and the caller",
+      "data_subjects": ["the calling staff member (linked by actor)"],
+      "personal_data": "yes, only through the actor field; the arguments themselves are facility data",
+      "sensitive": "no",
+      "fields": ["actor", "actor_role", "tool", "arguments", "outcome"],
+      "purpose": "Find a clinic and check stock for a referral; detect enumeration attempts",
+      "lawful_basis_teaching_label": "TEACHING LABEL (legal review pending): legitimate interest in running and securing the referral service",
+      "where": [
+        {"location": "logs/mcp_tools.jsonl", "persisted": true, "note": "operational log; arguments pass through the redactor"},
+        {"location": "logs/audit_mcp.jsonl", "persisted": true, "note": "audit line with HMAC of the arguments, not the arguments"},
+        {"location": "logs/tool_metrics.db", "persisted": true, "note": "counts and latencies only, no actor"}
+      ],
+      "retention": "dpa/retention.json#mcp_tool_logs and #mcp_audit_logs",
+      "access": "clinics_allowlist.json limits what each caller can see; security/rbac.py limits who can call",
+      "protection": ["allowlist + role matrix", "status-only answers to field roles", "per-session call budget"]
+    },
+    {
+      "id": "audit_logs",
+      "what": "One line per security decision: actor, role, action, resource, outcome, trace_id, keyed hash of the redacted payload",
+      "data_subjects": ["staff (actor)"],
+      "personal_data": true,
+      "sensitive": "no: payload text is never stored, only an HMAC of its redacted form",
+      "fields": ["ts", "trace_id", "actor", "actor_role", "action", "resource", "outcome", "payload_hash", "redactions", "hash_key_id", "prev"],
+      "purpose": "Security monitoring, incident investigation, evidence for access and erasure requests",
+      "lawful_basis_teaching_label": "TEACHING LABEL (legal review pending): legitimate interest / legal obligation to keep data secure (s.41)",
+      "where": [{"location": "logs/audit.jsonl and logs/audit_mcp.jsonl on the triage-logs volume", "persisted": true, "note": "hash-chained; archived files encrypted with security/encrypt_at_rest.py"}],
+      "retention": "dpa/retention.json#audit_logs",
+      "access": "auditor and dpo roles (security/rbac.py audit.read)",
+      "protection": ["redact then hash", "hash chain (verify_chain)", "envelope encryption for archives", "encrypted volume"]
+    },
+    {
+      "id": "api_logs",
+      "what": "Operational JSON lines: method, path, status, latency, urgency, prompt version, token counts",
+      "data_subjects": ["staff (user field on some lines)"],
+      "personal_data": "minimal",
+      "sensitive": "no",
+      "purpose": "Operations, cost and canary decisions (Weeks 7 and 8)",
+      "lawful_basis_teaching_label": "TEACHING LABEL (legal review pending): legitimate interest in operating the service",
+      "where": [{"location": "logs/api.jsonl", "persisted": true, "note": "every extra field passes through the redactor (afyaplus/logging_setup.py)"}],
+      "retention": "dpa/retention.json#api_logs"
+    },
+    {
+      "id": "not_personal",
+      "what": "Clinic registry (facility names, facility phone numbers, stock), synthetic golden set, prompts, configuration, metrics, deletion records",
+      "personal_data": false,
+      "note": "Facility phone numbers belong to institutions. evals/golden.jsonl and fixtures/ are synthetic. dpa/deletion_records.jsonl holds hashed record ids and counts only."
+    }
+  ],
+  "transfers_outside_kenya": [
+    {"to": "OpenAI (United States)", "when": "MODEL_BACKEND=openai only", "what": "message text, age, county", "safeguards_needed": "s.48 to s.50 conditions (adequate safeguards / appropriate contract) to be confirmed in legal review; until then the default backend is replay (no transfer)"},
+    {"to": "Azure South Africa North / AWS af-south-1", "when": "if the Key Vault / KMS design in security/kms_twin.json is built", "what": "secrets and encrypted logs", "safeguards_needed": "same review"}
+  ],
+  "data_subject_rights": "dpa/rights_process.md and dpa/rights_lookup.py",
+  "breach_notification": "Notify the Data Commissioner within 72 hours of becoming aware of a breach (s.43); runbook owner named in dpa/rights_process.md"
+}

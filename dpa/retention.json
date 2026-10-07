@@ -1,0 +1,57 @@
+{
+  "version": "2026-10-07",
+  "principle": "Keep personal data no longer than the purpose needs (Kenya DPA s.39, teaching mapping; legal review pending). Periods below are proposals for sign-off by the DPO, not legal advice.",
+  "job": "python -m dpa.retention_sweeper (role ops, action retention.sweep). Proposed schedule: daily at 02:00 EAT as a Kubernetes CronJob / Azure Container Apps job. Every run appends to dpa/deletion_records.jsonl, including runs that delete nothing.",
+  "deletion_log": "dpa/deletion_records.jsonl",
+  "stores": {
+    "triage_messages": {
+      "path": "fixtures/dpa/triage_messages.jsonl",
+      "timestamp_field": "created_at",
+      "retain_days": 90,
+      "action": "delete",
+      "why": "Long enough for a clinical QA review cycle and for a household to ask what was recorded; message text is the most sensitive data we hold"
+    },
+    "audit_logs": {
+      "path": "logs/audit.jsonl",
+      "timestamp_field": "ts",
+      "retain_days": 365,
+      "action": "delete",
+      "chained": true,
+      "why": "Security investigations and access requests can look back a year; lines hold no message text"
+    },
+    "mcp_audit_logs": {
+      "path": "logs/audit_mcp.jsonl",
+      "timestamp_field": "ts",
+      "retain_days": 365,
+      "action": "delete",
+      "chained": true,
+      "why": "Same as audit_logs"
+    },
+    "api_logs": {
+      "path": "logs/api.jsonl",
+      "timestamp_field": "ts",
+      "retain_days": 30,
+      "action": "delete",
+      "why": "Operational debugging and cost tracking only"
+    },
+    "mcp_tool_logs": {
+      "path": "logs/mcp_tools.jsonl",
+      "timestamp_field": "ts",
+      "retain_days": 30,
+      "action": "delete",
+      "why": "Operational debugging only"
+    },
+    "tool_metrics": {
+      "path": "logs/tool_metrics.db",
+      "retain_days": 180,
+      "action": "documented_job",
+      "why": "Aggregated counts with no actor; not personal data. Documented, not swept by the stub: DELETE FROM calls WHERE ts < now - 180 days."
+    },
+    "deletion_records": {
+      "path": "dpa/deletion_records.jsonl",
+      "retain_days": null,
+      "action": "never_swept",
+      "why": "Proof that deletion happened. Holds hashed record ids and counts only. The sweeper refuses to touch it."
+    }
+  }
+}

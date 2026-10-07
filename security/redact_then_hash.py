@@ -1,7 +1,7 @@
 """Structured audit trail: redact, then hash, then write one JSON line (Deliverable 3).
 
     python -m security.redact_then_hash "Bearer eyJ... patient ID 12345678, call 0712 345 678"   # show both steps
-    python -m security.redact_then_hash --verify logs/audit.jsonl                              # check the chain
+    python -m security.redact_then_hash --verify logs/audit.jsonl [--anchor <chain_anchor>]    # check the chain
 
 One audit line answers: who (actor, actor_role) did what (action) to which resource, with what outcome, in
 which request (trace_id). The payload itself is NOT stored. It is:
@@ -116,23 +116,25 @@ class AuditTrail:
         return entry
 
 
-def verify_chain(path: Path) -> tuple[bool, str]:
-    prev = GENESIS
+def verify_chain(path: Path, anchor: str = GENESIS) -> tuple[bool, str]:
+    """Check every line's `prev`. After a retention sweep, pass the deletion record's chain_anchor."""
+    prev, n = anchor, 0
     for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         entry = json.loads(line)
         if entry.get("prev") != prev:
             return False, f"chain broken at line {n} (a line before it was edited, inserted or deleted)"
         prev = line_sha(line)
-    return True, f"{n if prev != GENESIS else 0} lines, chain intact"
+    return True, f"{n} lines, chain intact"
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Show redact-then-hash on a string, or verify an audit file's chain.")
     ap.add_argument("text", nargs="*")
     ap.add_argument("--verify", type=Path)
+    ap.add_argument("--anchor", default=GENESIS, help="chain_anchor from the last retention sweep")
     args = ap.parse_args(argv)
     if args.verify:
-        ok, detail = verify_chain(args.verify)
+        ok, detail = verify_chain(args.verify, args.anchor)
         print(f"{args.verify}: {detail}")
         return 0 if ok else 1
     import os
