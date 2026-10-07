@@ -1,0 +1,44 @@
+# A tool schema changed WITHOUT a version bump (find_clinics gained has_stock_item; SERVER_VERSION still 1.0.0)
+$ git diff --stat
+ logistics_mcp_versioned.py | 36 ++++++++++++++++++++++++++----------
+ 1 file changed, 26 insertions(+), 10 deletions(-)
+
+$ python scripts/check_mcp_health.py
+## MCP health (live): afyaplus-logistics 1.0.0
+
+| check | result | detail |
+|---|---|---|
+| handshake | pass | serverInfo.name='afyaplus-logistics' (expected 'afyaplus-logistics'), protocol 2025-11-25 |
+| version | pass | serverInfo.version=1.0.0 (config/triage.yaml mcp.version=1.0.0) |
+| lock_version | pass | lock generated for 1.0.0, server reports 1.0.0 |
+| required_tools | pass | listed: check_stock, find_clinics |
+| schema_lock | **FAIL** | changed: find_clinics: bump SERVER_VERSION (semver) and regenerate the lock |
+| smoke_call | pass | check_stock({'clinic_id': 'KSM-001', 'item': 'oxytocin_10iu'}) -> isError=False, ok=True, quantity=0, status='out_of_stock' |
+| error_contract | pass | check_stock({'clinic_id': 'not-an-id', 'item': 'oxytocin_10iu'}) -> isError=True, error.code=INVALID_CLINIC_ID |
+| resource | pass | clinics://catalogue -> 1325 chars |
+
+MCP PROBE FAILED: assertion (exit 1)
+exit code: 1
+
+# The fix: bump SERVER_VERSION and config mcp.version to 1.1.0 (MINOR: new optional argument), regenerate the lock
+$ python scripts/check_mcp_health.py   # before regenerating the lock
+
+$ python scripts/check_mcp_health.py --write-lock
+wrote mcp_schema.lock.json for afyaplus-logistics 1.1.0 (2 tools)
+
+$ python scripts/check_mcp_health.py
+## MCP health (live): afyaplus-logistics 1.1.0
+
+| check | result | detail |
+|---|---|---|
+| handshake | pass | serverInfo.name='afyaplus-logistics' (expected 'afyaplus-logistics'), protocol 2025-11-25 |
+| version | pass | serverInfo.version=1.1.0 (config/triage.yaml mcp.version=1.1.0) |
+| lock_version | pass | lock generated for 1.1.0, server reports 1.1.0 |
+| required_tools | pass | listed: check_stock, find_clinics |
+| schema_lock | pass | all input schemas match the lock |
+| smoke_call | pass | check_stock({'clinic_id': 'KSM-001', 'item': 'oxytocin_10iu'}) -> isError=False, ok=True, quantity=0, status='out_of_stock' |
+| error_contract | pass | check_stock({'clinic_id': 'not-an-id', 'item': 'oxytocin_10iu'}) -> isError=True, error.code=INVALID_CLINIC_ID |
+| resource | pass | clinics://catalogue -> 1325 chars |
+
+MCP HEALTHY (exit 0)
+exit code: 0

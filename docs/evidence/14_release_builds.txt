@@ -1,0 +1,105 @@
+################ release build v1.2.0 (clean checkout of tag v1.2.0) ################
+$ git describe --tags --exact-match && git status --porcelain | wc -l
+v1.2.0
+       0
+$ scripts/build_and_tag.sh --release
+PASS  config_and_pin_parse       config/triage.yaml, prompts/pin.json
+PASS  bundle_matches_release     pin.json bundle_version=1.2.0, config release=1.2.0
+PASS  git_tag_matches_release    tag=v1.2.0, expected v1.2.0
+PASS  image_tag_matches_release  image=afyaplus-triage:1.2.0, expected tag 1.2.0
+PASS  no_unpinned_prompts        every prompts/*.txt is pinned
+PASS  prompt_1.2.0               triage_system_v1.2.0.txt sha256 da2a2183ac50 (active)
+PASS  active_prompt_pinned       config prompt_version=1.2.0, pin status=active
+PASS  single_active_prompt       one active prompt
+PASS  recording_1.2.0            fixtures/responses/da2a2183ac50.json
+PASS  waiver_1.2.0               urgency_agreement, emergency_recall waived by clinical_ops, ml-eng until 2026-11-30 (54 days left)
+PASS  mcp_version_aligned        SERVER_VERSION=1.0.0, config mcp.version=1.0.0, lock=afyaplus-logistics 1.0.0
+PASS  mcp_required_tools_locked  required ['find_clinics', 'check_stock']
+PASS  changelog_has_release      CHANGELOG.md section ## [1.2.0]
+RELEASE ALIGNMENT OK
+#0 building with "desktop-linux" instance using docker driver
+#3 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#6 [builder 1/4] FROM docker.io/library/python:3.11-slim@sha256:0dd364ba7e10242f07755449e3a3d0e35f9efd987952737b90def6709ab0c5ce
+#6 ...
+#6 [builder 1/4] FROM docker.io/library/python:3.11-slim@sha256:0dd364ba7e10242f07755449e3a3d0e35f9efd987952737b90def6709ab0c5ce
+#8 [runtime  2/12] RUN useradd --uid 10001 --create-home --shell /usr/sbin/nologin afya
+#9 [builder 2/4] RUN python -m venv /opt/venv
+#9 ...
+#10 [runtime  3/12] WORKDIR /app
+#9 [builder 2/4] RUN python -m venv /opt/venv
+#11 [builder 3/4] COPY requirements.txt .
+#12 [builder 4/4] RUN pip install -r requirements.txt
+#13 [runtime  4/12] COPY --from=builder /opt/venv /opt/venv
+#14 [runtime  5/12] COPY clinics.json mcp_schema.lock.json ./
+#15 [runtime  6/12] COPY afyaplus/ afyaplus/
+#16 [runtime  7/12] COPY tool_metrics.py logistics_mcp_versioned.py prompt_loader.py triage_engine.py ab_prompt_flag.py prompt_app.py ./
+#17 [runtime  8/12] COPY scripts/__init__.py scripts/check_mcp_health.py scripts/mcp_stub_server.py scripts/
+#18 [runtime  9/12] COPY fixtures/ fixtures/
+#19 [runtime 10/12] COPY config/ config/
+#20 [runtime 11/12] COPY prompts/ prompts/
+#21 [runtime 12/12] RUN mkdir -p logs && chown afya:afya logs
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/sl8rwoj0i2p6s8916l6xusmbn
+built afyaplus-triage:1.2.0
+image_id=sha256:d66b6d9c510ec48c254bb3a12b16fe9bc32cbc9361bc49f2063402a22a3a50ac
+ai.afyaplus.mcp.version=1.0.0
+ai.afyaplus.model.version=2026.10.0
+ai.afyaplus.prompt.active=1.2.0
+ai.afyaplus.prompt.active.sha256=da2a2183ac50a4f40eaf0b8ab07c2cae2cca44843faf6ff0a53bfe8a84ae7cbc
+ai.afyaplus.prompt.candidate=none
+org.opencontainers.image.revision=de3c39a46d3a
+org.opencontainers.image.version=1.2.0
+recorded afyaplus-triage:1.2.0 sha256:d66b6d9c510e in runbook.md release ledger
+exit code: 0
+
+################ release build v1.3.0 (clean checkout of tag v1.3.0) ################
+$ git describe --tags --exact-match && git status --porcelain | wc -l
+v1.3.0
+       0
+$ scripts/build_and_tag.sh --release
+PASS  config_and_pin_parse       config/triage.yaml, prompts/pin.json
+PASS  bundle_matches_release     pin.json bundle_version=1.3.0, config release=1.3.0
+PASS  git_tag_matches_release    tag=v1.3.0, expected v1.3.0
+PASS  image_tag_matches_release  image=afyaplus-triage:1.3.0, expected tag 1.3.0
+PASS  no_unpinned_prompts        every prompts/*.txt is pinned
+PASS  prompt_1.2.0               triage_system_v1.2.0.txt sha256 da2a2183ac50 (active)
+PASS  prompt_1.3.0-candidate     triage_system_v1.3.0-candidate.txt sha256 20f536db4193 (candidate)
+PASS  active_prompt_pinned       config prompt_version=1.2.0, pin status=active
+PASS  single_active_prompt       one active prompt
+PASS  candidate_prompt_pinned    candidate=1.3.0-candidate at 10% in ['staging'], pin status=candidate
+PASS  recording_1.2.0            fixtures/responses/da2a2183ac50.json
+PASS  waiver_1.2.0               urgency_agreement, emergency_recall waived by clinical_ops, ml-eng until 2026-11-30 (54 days left)
+PASS  recording_1.3.0-candidate  fixtures/responses/20f536db4193.json
+PASS  mcp_version_aligned        SERVER_VERSION=1.1.0, config mcp.version=1.1.0, lock=afyaplus-logistics 1.1.0
+PASS  mcp_required_tools_locked  required ['find_clinics', 'check_stock']
+PASS  changelog_has_release      CHANGELOG.md section ## [1.3.0]
+RELEASE ALIGNMENT OK
+#0 building with "desktop-linux" instance using docker driver
+#3 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#6 [builder 1/4] FROM docker.io/library/python:3.11-slim@sha256:0dd364ba7e10242f07755449e3a3d0e35f9efd987952737b90def6709ab0c5ce
+#8 [builder 2/4] RUN python -m venv /opt/venv
+#9 [builder 3/4] COPY requirements.txt .
+#10 [builder 4/4] RUN pip install -r requirements.txt
+#11 [runtime  2/12] RUN useradd --uid 10001 --create-home --shell /usr/sbin/nologin afya
+#12 [runtime  3/12] WORKDIR /app
+#13 [runtime  4/12] COPY --from=builder /opt/venv /opt/venv
+#14 [runtime  5/12] COPY clinics.json mcp_schema.lock.json ./
+#15 [runtime  6/12] COPY afyaplus/ afyaplus/
+#16 [runtime  7/12] COPY tool_metrics.py logistics_mcp_versioned.py prompt_loader.py triage_engine.py ab_prompt_flag.py prompt_app.py ./
+#17 [runtime  8/12] COPY scripts/__init__.py scripts/check_mcp_health.py scripts/mcp_stub_server.py scripts/
+#18 [runtime  9/12] COPY fixtures/ fixtures/
+#19 [runtime 10/12] COPY config/ config/
+#20 [runtime 11/12] COPY prompts/ prompts/
+#21 [runtime 12/12] RUN mkdir -p logs && chown afya:afya logs
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/l2m94w7u8ejrksrzj8naozsg8
+built afyaplus-triage:1.3.0
+image_id=sha256:550e67da89aead0c4b4a52981b41314d8b48ed027e1dc56d4b53a28a5f56046a
+ai.afyaplus.mcp.version=1.1.0
+ai.afyaplus.model.version=2026.10.0
+ai.afyaplus.prompt.active=1.2.0
+ai.afyaplus.prompt.active.sha256=da2a2183ac50a4f40eaf0b8ab07c2cae2cca44843faf6ff0a53bfe8a84ae7cbc
+ai.afyaplus.prompt.candidate=1.3.0-candidate
+org.opencontainers.image.revision=ff0c29f8e753
+org.opencontainers.image.version=1.3.0
+recorded afyaplus-triage:1.3.0 sha256:550e67da89ae in runbook.md release ledger
+exit code: 0
+

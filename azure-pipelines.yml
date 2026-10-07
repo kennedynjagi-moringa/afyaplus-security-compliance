@@ -1,0 +1,126 @@
+# Azure DevOps twin of .github/workflows/ci.yml (Deliverable 2). Same stages, commands and exit codes:
+#   Lint -> Eval + McpHealth -> Deploy (stub)
+# No Azure DevOps organisation is used for this capstone. This file is config-as-code, and
+# scripts/run_pipeline_local.sh runs the same stages locally (logs in docs/evidence/). See README fallbacks.
+
+trigger:
+  branches:
+    include: [main]
+  tags:
+    include: ["v*"]
+
+pr:
+  branches:
+    include: ["*"]
+
+parameters:
+  - name: demoFailure
+    displayName: Demonstrate a blocked deploy
+    type: string
+    default: none
+    values: [none, eval, mcp]
+  - name: mcpTarget
+    displayName: MCP probe target
+    type: string
+    default: live
+    values: [live, stub]
+
+variables:
+  pythonVersion: "3.11"
+  MODEL_BACKEND: replay
+  DEPLOY_ENV: staging
+  HOST_PORT: "8080"
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: Lint
+    displayName: lint-test
+    jobs:
+      - job: lint_test
+        displayName: lint-test
+        steps:
+          - task: UsePythonVersion@0
+            inputs: {versionSpec: "$(pythonVersion)"}
+          - script: pip install -r requirements-dev.txt
+            displayName: Install
+          - script: ruff check .
+            displayName: Lint (ruff)
+          - script: |
+              if [[ "$(Build.SourceBranch)" == refs/tags/* ]]; then
+                python check_prompt_pin.py --tag "$(Build.SourceBranchName)"
+              else
+                python check_prompt_pin.py
+              fi
+            displayName: Release alignment
+          - script: python -m pytest -q --junitxml=pytest.xml
+            displayName: Unit tests
+            env:
+              JWT_SECRET: ci-only-not-a-secret-$(Build.BuildId)-0123456789abcdef
+          - task: PublishTestResults@2
+            condition: always()
+            inputs: {testResultsFiles: pytest.xml}
+
+  - stage: Eval
+    displayName: eval
+    dependsOn: Lint
+    jobs:
+      - job: eval
+        displayName: eval
+        steps:
+          - task: UsePythonVersion@0
+            inputs: {versionSpec: "$(pythonVersion)"}
+          - script: pip install -r requirements.txt
+            displayName: Install
+          - script: python eval_prompts.py
+            displayName: Golden-set gate (active + candidate)
+          - ${{ if eq(parameters.demoFailure, 'eval') }}:
+              - script: python eval_prompts.py --prompt-file evals/demo/triage_system_v1.3.1-costtrim.txt
+                displayName: "Demo: gate the cost-trim draft (expected to fail)"
+          - publish: evals/reports
+            artifact: eval-reports
+            condition: always()
+
+  - stage: McpHealth
+    displayName: mcp_health
+    dependsOn: Lint
+    jobs:
+      - job: mcp_health
+        displayName: mcp-health
+        steps:
+          - task: UsePythonVersion@0
+            inputs: {versionSpec: "$(pythonVersion)"}
+          - script: pip install -r requirements.txt
+            displayName: Install
+          - script: python scripts/check_mcp_health.py --target ${{ parameters.mcpTarget }}
+            displayName: Probe MCP server (${{ parameters.mcpTarget }})
+          - ${{ if eq(parameters.demoFailure, 'mcp') }}:
+              - script: python scripts/check_mcp_health.py --target stub
+                displayName: "Demo: probe a server that dropped check_stock (expected to fail)"
+                env:
+                  MCP_STUB_FAULT: drop_tool
+
+  - stage: Deploy
+    displayName: deploy (stub)
+    dependsOn: [Eval, McpHealth]
+    condition: succeeded()
+    jobs:
+      - job: build_deploy
+        displayName: build-deploy
+        steps:
+          - task: UsePythonVersion@0
+            inputs: {versionSpec: "$(pythonVersion)"}
+          - script: pip install -r requirements.txt
+            displayName: Install
+          - script: |
+              if [[ "$(Build.SourceBranch)" == refs/tags/* ]]; then scripts/build_and_tag.sh --release; else scripts/build_and_tag.sh; fi
+              echo "##vso[task.setvariable variable=IMAGE]$(docker images --format '{{.Repository}}:{{.Tag}}' afyaplus-triage | grep -v ':sha-' | head -1)"
+            displayName: Build and tag image
+          - script: |
+              export JWT_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+              scripts/deploy_stub.sh
+            displayName: Deploy stub + post-deploy gates
+          - script: JWT_SECRET=teardown-only docker compose down -v
+            displayName: Tear down
+            condition: always()

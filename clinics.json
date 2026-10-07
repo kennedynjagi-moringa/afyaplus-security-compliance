@@ -1,0 +1,738 @@
+{
+  "dataset": "AfyaPlus clinic registry and pharmacy stock (synthetic, for training use)",
+  "data_as_of": "2026-09-28",
+  "units": {
+    "amoxicillin_250mg": "dispersible tablets",
+    "artemether_lumefantrine": "treatment packs (AL 20/120)",
+    "ors_sachet": "sachets",
+    "zinc_20mg": "tablets",
+    "paracetamol_500mg": "tablets",
+    "malaria_rdt": "test kits",
+    "oxytocin_10iu": "ampoules (10 IU)",
+    "iron_folate": "tablets"
+  },
+  "clinics": [
+    {
+      "id": "NRB-001",
+      "name": "Mbagathi Road Health Centre",
+      "county": "Nairobi",
+      "sub_county": "Dagoretti North",
+      "kephl_level": 4,
+      "open_24_hours": true,
+      "services": [
+        "outpatient",
+        "maternity",
+        "emergency",
+        "laboratory",
+        "pharmacy",
+        "immunisation",
+        "hiv_care"
+      ],
+      "ambulance": true,
+      "phone": "+254 700 000 100",
+      "stock_updated": "2026-09-27",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 150,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 90,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 60,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "NRB-002",
+      "name": "Kibera South Dispensary",
+      "county": "Nairobi",
+      "sub_county": "Kibra",
+      "kephl_level": 2,
+      "open_24_hours": false,
+      "services": [
+        "outpatient",
+        "immunisation",
+        "family_planning",
+        "pharmacy"
+      ],
+      "ambulance": false,
+      "phone": "+254 700 000 101",
+      "stock_updated": "2026-09-26",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 600,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 90,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 0,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 40,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 60,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "NRB-003",
+      "name": "Mathare North Health Centre",
+      "county": "Nairobi",
+      "sub_county": "Mathare",
+      "kephl_level": 3,
+      "open_24_hours": true,
+      "services": [
+        "outpatient",
+        "maternity",
+        "laboratory",
+        "pharmacy",
+        "tb_care"
+      ],
+      "ambulance": false,
+      "phone": "+254 700 000 102",
+      "stock_updated": "2026-09-25",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 600,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 90,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 12,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "KSM-001",
+      "name": "Kondele Health Centre",
+      "county": "Kisumu",
+      "sub_county": "Kisumu Central",
+      "kephl_level": 3,
+      "open_24_hours": true,
+      "services": [
+        "outpatient",
+        "maternity",
+        "laboratory",
+        "pharmacy",
+        "immunisation"
+      ],
+      "ambulance": false,
+      "phone": "+254 700 000 103",
+      "stock_updated": "2026-09-27",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 600,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 18,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 0,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "KSM-002",
+      "name": "Nyalenda Sub-County Hospital",
+      "county": "Kisumu",
+      "sub_county": "Kisumu East",
+      "kephl_level": 4,
+      "open_24_hours": true,
+      "services": [
+        "outpatient",
+        "maternity",
+        "emergency",
+        "laboratory",
+        "pharmacy",
+        "hiv_care",
+        "tb_care"
+      ],
+      "ambulance": true,
+      "phone": "+254 700 000 104",
+      "stock_updated": "2026-09-28",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 600,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 90,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 35,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "KSM-003",
+      "name": "Manyatta Dispensary",
+      "county": "Kisumu",
+      "sub_county": "Kisumu Central",
+      "kephl_level": 2,
+      "open_24_hours": false,
+      "services": [
+        "outpatient",
+        "immunisation",
+        "family_planning"
+      ],
+      "ambulance": false,
+      "phone": "+254 700 000 105",
+      "stock_updated": "2026-09-20",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 600,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 0,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 0,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 60,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "MSA-001",
+      "name": "Likoni Health Centre",
+      "county": "Mombasa",
+      "sub_county": "Likoni",
+      "kephl_level": 3,
+      "open_24_hours": true,
+      "services": [
+        "outpatient",
+        "maternity",
+        "laboratory",
+        "pharmacy",
+        "immunisation"
+      ],
+      "ambulance": true,
+      "phone": "+254 700 000 106",
+      "stock_updated": "2026-09-27",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 600,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 90,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 60,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "MSA-002",
+      "name": "Kisauni Dispensary",
+      "county": "Mombasa",
+      "sub_county": "Kisauni",
+      "kephl_level": 2,
+      "open_24_hours": false,
+      "services": [
+        "outpatient",
+        "family_planning",
+        "pharmacy"
+      ],
+      "ambulance": false,
+      "phone": "+254 700 000 107",
+      "stock_updated": "2026-09-24",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 90,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 90,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 60,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 60,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "NKR-001",
+      "name": "Bondeni Maternity Centre",
+      "county": "Nakuru",
+      "sub_county": "Nakuru East",
+      "kephl_level": 3,
+      "open_24_hours": true,
+      "services": [
+        "maternity",
+        "immunisation",
+        "family_planning",
+        "laboratory"
+      ],
+      "ambulance": true,
+      "phone": "+254 700 000 108",
+      "stock_updated": "2026-09-28",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 600,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 90,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 48,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 120,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "NKR-002",
+      "name": "Naivasha Road Health Centre",
+      "county": "Nakuru",
+      "sub_county": "Naivasha",
+      "kephl_level": 3,
+      "open_24_hours": false,
+      "services": [
+        "outpatient",
+        "laboratory",
+        "pharmacy",
+        "tb_care"
+      ],
+      "ambulance": false,
+      "phone": "+254 700 000 109",
+      "stock_updated": "2026-09-26",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 600,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 90,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 250,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 60,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "TRK-001",
+      "name": "Lodwar Township Health Centre",
+      "county": "Turkana",
+      "sub_county": "Turkana Central",
+      "kephl_level": 3,
+      "open_24_hours": true,
+      "services": [
+        "outpatient",
+        "maternity",
+        "emergency",
+        "laboratory",
+        "pharmacy"
+      ],
+      "ambulance": true,
+      "phone": "+254 700 000 110",
+      "stock_updated": "2026-09-22",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 600,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 10,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 45,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 20,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 60,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "TRK-002",
+      "name": "Kakuma Mission Dispensary",
+      "county": "Turkana",
+      "sub_county": "Turkana West",
+      "kephl_level": 2,
+      "open_24_hours": false,
+      "services": [
+        "outpatient",
+        "immunisation",
+        "pharmacy"
+      ],
+      "ambulance": false,
+      "phone": "+254 700 000 111",
+      "stock_updated": "2026-09-15",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 0,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 90,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 0,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 60,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "KBU-001",
+      "name": "Thika Level 4 Satellite Clinic",
+      "county": "Kiambu",
+      "sub_county": "Thika Town",
+      "kephl_level": 4,
+      "open_24_hours": true,
+      "services": [
+        "outpatient",
+        "maternity",
+        "emergency",
+        "laboratory",
+        "pharmacy",
+        "hiv_care"
+      ],
+      "ambulance": true,
+      "phone": "+254 700 000 112",
+      "stock_updated": "2026-09-28",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 600,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 90,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 60,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 600,
+          "reorder_level": 200
+        }
+      }
+    },
+    {
+      "id": "KBU-002",
+      "name": "Ruiru Dispensary",
+      "county": "Kiambu",
+      "sub_county": "Ruiru",
+      "kephl_level": 2,
+      "open_24_hours": false,
+      "services": [
+        "outpatient",
+        "immunisation",
+        "family_planning"
+      ],
+      "ambulance": false,
+      "phone": "+254 700 000 113",
+      "stock_updated": "2026-09-27",
+      "stock": {
+        "amoxicillin_250mg": {
+          "quantity": 600,
+          "reorder_level": 200
+        },
+        "artemether_lumefantrine": {
+          "quantity": 90,
+          "reorder_level": 30
+        },
+        "ors_sachet": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "zinc_20mg": {
+          "quantity": 300,
+          "reorder_level": 100
+        },
+        "paracetamol_500mg": {
+          "quantity": 900,
+          "reorder_level": 300
+        },
+        "malaria_rdt": {
+          "quantity": 150,
+          "reorder_level": 50
+        },
+        "oxytocin_10iu": {
+          "quantity": 60,
+          "reorder_level": 20
+        },
+        "iron_folate": {
+          "quantity": 150,
+          "reorder_level": 200
+        }
+      }
+    }
+  ]
+}

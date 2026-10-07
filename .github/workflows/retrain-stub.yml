@@ -1,0 +1,37 @@
+# Retrain job, stubbed (no GPU). Manual trigger only. It bumps model_version in config/triage.yaml,
+# writes a CHANGELOG line saying no weights were trained, then runs the same alignment check and eval
+# gate as ci.yml. The resulting diff is uploaded for a human to open as a PR: the job never pushes, so
+# a "retrained" model still goes through review, CODEOWNERS and the full pipeline.
+name: retrain-stub
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  retrain:
+    name: retrain-stub
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements.txt
+      - name: Retrain (stub, model_version bump only)
+        run: python scripts/retrain_stub.py
+      - name: Release alignment
+        run: python check_prompt_pin.py
+      - name: Eval gate on the "retrained" config
+        run: python eval_prompts.py
+      - name: Diff for review
+        run: git diff | tee retrain.diff
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retrain-diff
+          path: retrain.diff

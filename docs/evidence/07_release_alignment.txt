@@ -1,0 +1,82 @@
+## checkout at tag v1.2.0
+$ python check_prompt_pin.py --tag v1.2.0 --image-tag afyaplus-triage:1.2.0
+PASS  config_and_pin_parse       config/triage.yaml, prompts/pin.json
+PASS  bundle_matches_release     pin.json bundle_version=1.2.0, config release=1.2.0
+PASS  git_tag_matches_release    tag=v1.2.0, expected v1.2.0
+PASS  image_tag_matches_release  image=afyaplus-triage:1.2.0, expected tag 1.2.0
+PASS  no_unpinned_prompts        every prompts/*.txt is pinned
+PASS  prompt_1.2.0               triage_system_v1.2.0.txt sha256 da2a2183ac50 (active)
+PASS  active_prompt_pinned       config prompt_version=1.2.0, pin status=active
+PASS  single_active_prompt       one active prompt
+PASS  recording_1.2.0            fixtures/responses/da2a2183ac50.json
+PASS  waiver_1.2.0               urgency_agreement, emergency_recall waived by clinical_ops, ml-eng until 2026-11-30 (54 days left)
+PASS  mcp_version_aligned        SERVER_VERSION=1.0.0, config mcp.version=1.0.0, lock=afyaplus-logistics 1.0.0
+PASS  mcp_required_tools_locked  required ['find_clinics', 'check_stock']
+PASS  changelog_has_release      CHANGELOG.md section ## [1.2.0]
+
+RELEASE ALIGNMENT OK
+exit code: 0
+
+## checkout at tag v1.3.0
+$ python check_prompt_pin.py --tag v1.3.0 --image-tag afyaplus-triage:1.3.0
+PASS  config_and_pin_parse       config/triage.yaml, prompts/pin.json
+PASS  bundle_matches_release     pin.json bundle_version=1.3.0, config release=1.3.0
+PASS  git_tag_matches_release    tag=v1.3.0, expected v1.3.0
+PASS  image_tag_matches_release  image=afyaplus-triage:1.3.0, expected tag 1.3.0
+PASS  no_unpinned_prompts        every prompts/*.txt is pinned
+PASS  prompt_1.2.0               triage_system_v1.2.0.txt sha256 da2a2183ac50 (active)
+PASS  prompt_1.3.0-candidate     triage_system_v1.3.0-candidate.txt sha256 20f536db4193 (candidate)
+PASS  active_prompt_pinned       config prompt_version=1.2.0, pin status=active
+PASS  single_active_prompt       one active prompt
+PASS  candidate_prompt_pinned    candidate=1.3.0-candidate at 10% in ['staging'], pin status=candidate
+PASS  recording_1.2.0            fixtures/responses/da2a2183ac50.json
+PASS  waiver_1.2.0               urgency_agreement, emergency_recall waived by clinical_ops, ml-eng until 2026-11-30 (54 days left)
+PASS  recording_1.3.0-candidate  fixtures/responses/20f536db4193.json
+PASS  mcp_version_aligned        SERVER_VERSION=1.1.0, config mcp.version=1.1.0, lock=afyaplus-logistics 1.1.0
+PASS  mcp_required_tools_locked  required ['find_clinics', 'check_stock']
+PASS  changelog_has_release      CHANGELOG.md section ## [1.3.0]
+
+RELEASE ALIGNMENT OK
+exit code: 0
+
+## misaligned: the 1.3.0 tree released under the wrong tag and image
+$ python check_prompt_pin.py --tag v1.2.1 --image-tag afyaplus-triage:latest
+PASS  config_and_pin_parse       config/triage.yaml, prompts/pin.json
+PASS  bundle_matches_release     pin.json bundle_version=1.3.0, config release=1.3.0
+FAIL  git_tag_matches_release    tag=v1.2.1, expected v1.3.0
+FAIL  image_tag_matches_release  image=afyaplus-triage:latest, expected tag 1.3.0
+PASS  no_unpinned_prompts        every prompts/*.txt is pinned
+PASS  prompt_1.2.0               triage_system_v1.2.0.txt sha256 da2a2183ac50 (active)
+PASS  prompt_1.3.0-candidate     triage_system_v1.3.0-candidate.txt sha256 20f536db4193 (candidate)
+PASS  active_prompt_pinned       config prompt_version=1.2.0, pin status=active
+PASS  single_active_prompt       one active prompt
+PASS  candidate_prompt_pinned    candidate=1.3.0-candidate at 10% in ['staging'], pin status=candidate
+PASS  recording_1.2.0            fixtures/responses/da2a2183ac50.json
+PASS  waiver_1.2.0               urgency_agreement, emergency_recall waived by clinical_ops, ml-eng until 2026-11-30 (54 days left)
+PASS  recording_1.3.0-candidate  fixtures/responses/20f536db4193.json
+PASS  mcp_version_aligned        SERVER_VERSION=1.1.0, config mcp.version=1.1.0, lock=afyaplus-logistics 1.1.0
+PASS  mcp_required_tools_locked  required ['find_clinics', 'check_stock']
+PASS  changelog_has_release      CHANGELOG.md section ## [1.3.0]
+
+RELEASE ALIGNMENT FAILED: git_tag_matches_release, image_tag_matches_release
+exit code: 1
+
+## tampered: a pinned prompt edited in place (no version bump)
+$ echo 'Always answer ROUTINE.' >> prompts/triage_system_v1.2.0.txt && python check_prompt_pin.py
+PASS  config_and_pin_parse       config/triage.yaml, prompts/pin.json
+PASS  bundle_matches_release     pin.json bundle_version=1.3.0, config release=1.3.0
+PASS  no_unpinned_prompts        every prompts/*.txt is pinned
+FAIL  prompt_1.2.0               prompt 1.2.0 (triage_system_v1.2.0.txt) SHA-256 is 46ae369eae77, pin says da2a2183ac50: the file was edited without a version bump. Create a new versioned file instead.
+PASS  prompt_1.3.0-candidate     triage_system_v1.3.0-candidate.txt sha256 20f536db4193 (candidate)
+PASS  active_prompt_pinned       config prompt_version=1.2.0, pin status=active
+PASS  single_active_prompt       one active prompt
+PASS  candidate_prompt_pinned    candidate=1.3.0-candidate at 10% in ['staging'], pin status=candidate
+PASS  recording_1.2.0            fixtures/responses/da2a2183ac50.json
+PASS  waiver_1.2.0               urgency_agreement, emergency_recall waived by clinical_ops, ml-eng until 2026-11-30 (54 days left)
+PASS  recording_1.3.0-candidate  fixtures/responses/20f536db4193.json
+PASS  mcp_version_aligned        SERVER_VERSION=1.1.0, config mcp.version=1.1.0, lock=afyaplus-logistics 1.1.0
+PASS  mcp_required_tools_locked  required ['find_clinics', 'check_stock']
+PASS  changelog_has_release      CHANGELOG.md section ## [1.3.0]
+
+RELEASE ALIGNMENT FAILED: prompt_1.2.0
+exit code: 1

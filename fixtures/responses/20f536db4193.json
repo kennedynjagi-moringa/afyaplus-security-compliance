@@ -1,0 +1,1003 @@
+{
+ "prompt_version": "1.3.0-candidate",
+ "prompt_sha256": "20f536db419369a964ed642e89366b43d48bce84fd3b32eefae50b1c8e3acb55",
+ "model_call": {
+  "name": "gpt-4o-mini-2024-07-18",
+  "temperature": 0.0,
+  "max_output_tokens": 400
+ },
+ "model_returned": [
+  "gpt-4o-mini-2024-07-18"
+ ],
+ "system_fingerprint": "fp_32076909c0",
+ "recorded_at": "2026-10-07T14:14:32+00:00",
+ "golden_set_sha256": "389c4966e530ff39811687da30e20fc81e35c43502eee4ab12e9895abd284861",
+ "usage": {
+  "calls": 75,
+  "input_tokens": 52123,
+  "output_tokens": 5173,
+  "cost_usd": 0.010922
+ },
+ "responses": {
+  "QP01": {
+   "message_sha256": "67fa7e81482cb48cf07041f53d0d0dc71bf5cc48ddae10e98009af04acb9f073",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "fever"
+    ],
+    "danger_signs": [],
+    "rationale": "The child has a fever for 2 days, which is a concern for a child under 5, even though they are eating and playing normally.",
+    "recommended_action": "Refer the child to a clinician within 24 hours."
+   }
+  },
+  "QP02": {
+   "message_sha256": "6f1d2ee49dfc3cf0751bb5e631da2dedcb62bd7d2b33d4536be309650d34c808",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "fever for 2 days",
+     "eating normally",
+     "playing normally"
+    ],
+    "danger_signs": [],
+    "rationale": "The child is under 5 years old and has had a fever for more than a day, which requires evaluation by a clinician within 24 hours even if the child appears well now.",
+    "recommended_action": "Refer the child to a clinician within 24 hours for further evaluation."
+   }
+  },
+  "QP03": {
+   "message_sha256": "b3ac55961a46886ead4116da9c929e2d7ec96736537ed134ec94da7316bb711a",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "cough",
+     "runny nose"
+    ],
+    "danger_signs": [],
+    "rationale": "The child has a cough and runny nose but is breathing normally and has no fever, indicating a stable condition.",
+    "recommended_action": "Advise the caregiver on home care and monitor the child's symptoms."
+   }
+  },
+  "QP04": {
+   "message_sha256": "7374313dd098c8fb6d4c7acdea79499d8b64964bf96d29b49a826e5110511af4",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "cough",
+     "cold"
+    ],
+    "danger_signs": [],
+    "rationale": "The child has a cough and cold for two days but does not have a fever and is breathing normally, indicating a stable condition.",
+    "recommended_action": "Advise the caregiver on home care and monitor the child's symptoms."
+   }
+  },
+  "QP05": {
+   "message_sha256": "e930aa0a49d90537ff703fdc347e91fe42e2df38e5e58352b71eb6348d236352",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "swollen feet",
+     "headache"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient is a pregnant woman with symptoms that could indicate a potential complication, requiring evaluation within 24 hours.",
+    "recommended_action": "Refer the patient to a clinician for further assessment."
+   }
+  },
+  "QP06": {
+   "message_sha256": "1dfff6f995f2cd8786f8256510056ff68c03b4dd84f718d42e664c08b2eb7051",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "headache",
+     "swollen legs"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient is pregnant and experiencing headache and swelling, which could indicate a potential concern that requires evaluation within 24 hours.",
+    "recommended_action": "Refer the patient to a clinician for further assessment."
+   }
+  },
+  "QP07": {
+   "message_sha256": "c89ee5a3854d793450d901206b034a38a20e0f79e9f54b1a6b49c8b8fdcb67c1",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "fever",
+     "chills",
+     "headache"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has had a fever for 3 days, which requires evaluation by a clinician within 24 hours.",
+    "recommended_action": "Refer the patient to a clinician for further assessment."
+   }
+  },
+  "QP08": {
+   "message_sha256": "d165c44a1660f1a4d4e241172c77703b06a1fc1ed5fb77a939800b587b585aa9",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "convulsions",
+     "very high fever"
+    ],
+    "danger_signs": [
+     "convulsions"
+    ],
+    "rationale": "The child is experiencing convulsions, which is a danger sign that requires immediate attention.",
+    "recommended_action": "Refer the child to a healthcare facility immediately."
+   }
+  },
+  "QP09": {
+   "message_sha256": "2cc7d5ff29d451f57dbac1c84c319b7beaf0e29ea248cfdd94ff242090cbf366",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "fever"
+    ],
+    "danger_signs": [],
+    "rationale": "The child is under 5 years old and has a high fever, which requires evaluation by a clinician within 24 hours.",
+    "recommended_action": "Refer the child to a clinician for further assessment."
+   }
+  },
+  "QP10": {
+   "message_sha256": "aa917dceb3fb3689c00c7b884def89cdf68c132ca0fd05fc3ff254c52bc7ecc3",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "unable to breastfeed",
+     "very sleepy"
+    ],
+    "danger_signs": [],
+    "rationale": "The baby is unable to breastfeed and is very sleepy, which are concerning signs that require immediate attention.",
+    "recommended_action": "Refer the baby to a healthcare facility immediately."
+   }
+  },
+  "QP11": {
+   "message_sha256": "ea11b9fe010a2b6882586928f28b2531f41b4b593fb7126f5c8b0a6a57cedb08",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "chest pain",
+     "heavy sweating"
+    ],
+    "danger_signs": [
+     "chest pain",
+     "spreading to the left arm"
+    ],
+    "rationale": "The patient is experiencing chest pain that spreads to the left arm, which is a danger sign indicating a potential serious condition. Heavy sweating further indicates urgency.",
+    "recommended_action": "Refer the patient immediately to a healthcare facility."
+   }
+  },
+  "QP12": {
+   "message_sha256": "78e93021913c0813a12be3730f74270992e8cc05c53d322d084a28b06c708ae4",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "mild knee pain",
+     "walking normally",
+     "eating normally"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient is stable, active, and has no fever or other concerning symptoms.",
+    "recommended_action": "Advise the CHW to provide health advice and monitor the patient's condition."
+   }
+  },
+  "QP13": {
+   "message_sha256": "db4f56130c220799814e2f87a4679c45cb2f0e962a9e849ace8a90b2cca93f5e",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The client is requesting a family planning pills refill and has no complaints, indicating a stable condition.",
+    "recommended_action": "Advise the CHW to assist the client with the family planning pills refill."
+   }
+  },
+  "QP14": {
+   "message_sha256": "0340975bcd08233e35219bd170f37df95f67f0e0b117f40577b8bbd9b7077d0c",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The child is healthy and only requires a routine vaccination without any reported symptoms or danger signs.",
+    "recommended_action": "Schedule the child for measles vaccination."
+   }
+  },
+  "QP15": {
+   "message_sha256": "bce15d1cfeb83ec512edca100b8c5378634eb091aec847250af1fd69cf68b958",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The child is requesting a vaccination and has no reported issues or symptoms, indicating a routine health need.",
+    "recommended_action": "Schedule the vaccination for the child."
+   }
+  },
+  "QP16": {
+   "message_sha256": "4a7201cab39f63ff508c307467814d3ed3c6b41b72c8530e23824d957c96fac3",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "feels well"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient is a person on long-term treatment for diabetes who has run out of medication, which requires attention within 24 hours to prevent complications.",
+    "recommended_action": "Refer the patient to a clinician for medication refill."
+   }
+  },
+  "QP17": {
+   "message_sha256": "8ff6cb5e51431f6eca0531725a054975ea36c45786a8c127e488d81180acaf6c",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "cough for more than 2 weeks",
+     "night sweats",
+     "weight loss"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has a cough lasting more than 2 weeks, which is concerning and requires evaluation by a clinician within 24 hours.",
+    "recommended_action": "Refer the patient to a clinician for further assessment."
+   }
+  },
+  "QP18": {
+   "message_sha256": "175a2f413715bf7a4f915fb0228d96562daab673441d415b4553ce6402b1861a",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "cough for more than 2 weeks",
+     "night sweats"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has a cough lasting more than 2 weeks, which requires evaluation by a clinician within 24 hours.",
+    "recommended_action": "Refer the patient to a clinician for further assessment."
+   }
+  },
+  "QP19": {
+   "message_sha256": "f2b5fe402ba27b52b48d4da2b0e23f1424ca41f4b2bfbc55010beef205dc4452",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "heavy bleeding"
+    ],
+    "danger_signs": [
+     "bleeding"
+    ],
+    "rationale": "The patient is experiencing heavy bleeding after childbirth, which is a danger sign that requires immediate attention.",
+    "recommended_action": "Refer the patient to a healthcare facility immediately."
+   }
+  },
+  "QP20": {
+   "message_sha256": "071d9df27f58c09e36ed8895e031d4c13e4f723a663cd5ac681b044221b8510e",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "itchy skin rash"
+    ],
+    "danger_signs": [],
+    "rationale": "The child is active, playing normally, and has no fever, indicating a stable condition.",
+    "recommended_action": "Advise the caregiver to monitor the rash and seek routine care if it does not improve."
+   }
+  },
+  "QP21": {
+   "message_sha256": "b02e3b31cea7b482d31c96c72d856793d28873a5ca467231e0320c9956069328",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "rash for one week",
+     "no fever",
+     "playing normally"
+    ],
+    "danger_signs": [],
+    "rationale": "The child has a rash that has lasted for a week but is otherwise active and does not have a fever, indicating a stable condition without urgent concerns.",
+    "recommended_action": "Advise the caregiver to monitor the rash and seek routine care if it does not improve."
+   }
+  },
+  "QP22": {
+   "message_sha256": "7efa865371737bba42a1ebbb8b9499ce9e3c96afcf13ccf941b75a10d6d8fb07",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "vomiting everything",
+     "very weak"
+    ],
+    "danger_signs": [],
+    "rationale": "The child is experiencing severe vomiting and weakness, which can lead to dehydration and requires immediate medical attention.",
+    "recommended_action": "Refer the child to a clinician immediately."
+   }
+  },
+  "QP23": {
+   "message_sha256": "90be997c4a805dd5c17f0f1a1f700c7bd0fff939d4007e785f6f37b0dd1fe856",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The patient has a home blood pressure reading of 165/100, which is above the threshold for urgent care, even though there are no symptoms reported.",
+    "recommended_action": "Refer the patient to a clinician within 24 hours for further evaluation."
+   }
+  },
+  "QP24": {
+   "message_sha256": "c660d5aee6bd178870ef7fdca300c931a6b134c0504f5a572f4b822c3182a228",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "diarrhoea for three days",
+     "drinking water well"
+    ],
+    "danger_signs": [],
+    "rationale": "The child is under 5 years old and has had diarrhoea for more than a day, which requires attention even if they are currently drinking well.",
+    "recommended_action": "Refer the child to a clinician within 24 hours."
+   }
+  },
+  "FT01": {
+   "message_sha256": "51bf865d2634d4692e43a4257d4613a97879d2a721a66ccc9fa4dea2551dc5d7",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "fever",
+     "poor appetite"
+    ],
+    "danger_signs": [],
+    "rationale": "The child is under 5 years old with a fever lasting more than a day and poor feeding, which requires attention within 24 hours.",
+    "recommended_action": "Refer the child to a clinician for further evaluation."
+   }
+  },
+  "FT02": {
+   "message_sha256": "6024070e0412adb43fc43f42ec23856894e4f49386dbb374610e6d4968a7d3e5",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "swollen arm",
+     "painful arm",
+     "can move fingers"
+    ],
+    "danger_signs": [],
+    "rationale": "The child has an injury with swelling and pain that limits use, which requires attention within 24 hours.",
+    "recommended_action": "Refer the child to a clinician for further evaluation and treatment."
+   }
+  },
+  "FT03": {
+   "message_sha256": "89fb47f68ad58d5afd81230c8f52ee0907e8bd2e4cb9abd44f4bf2b629083d2a",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "breathing difficulty"
+    ],
+    "danger_signs": [
+     "chest retraction"
+    ],
+    "rationale": "The child is experiencing breathing difficulty, which is a danger sign that requires immediate attention.",
+    "recommended_action": "Refer the case to a clinician immediately."
+   }
+  },
+  "FT04": {
+   "message_sha256": "183cee1d0b5f27d4381c3d89ccb4062a9ee8f1ecf03ddb2f945e074e44d9f718",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "small cut on hand"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has a minor, stable complaint with no signs of infection or bleeding, and is otherwise well.",
+    "recommended_action": "Advise the CHW to monitor the wound for any signs of infection and provide basic wound care advice."
+   }
+  },
+  "FT05": {
+   "message_sha256": "3fbfb48e0dd515694b16f24867af6bb0c309b3778647e26b5bab820ac3c6cd0a",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "confusion",
+     "weakness in right arm"
+    ],
+    "danger_signs": [
+     "sudden confusion",
+     "sudden weakness of one side of the body"
+    ],
+    "rationale": "The patient is experiencing sudden confusion and weakness in one arm, which are both danger signs indicating a potential emergency situation.",
+    "recommended_action": "Refer the patient immediately for urgent medical evaluation."
+   }
+  },
+  "FT06": {
+   "message_sha256": "2ba6ee69f5092f3ff298640d8375344a352d2d46e04bf63c2ce8d56301cb723e",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [],
+    "danger_signs": [
+     "baby not moving"
+    ],
+    "rationale": "The patient is 32 weeks pregnant and reports that the baby has not moved since yesterday evening, which is a danger sign that requires immediate attention.",
+    "recommended_action": "Refer the patient to a clinician immediately."
+   }
+  },
+  "FT07": {
+   "message_sha256": "1ae94c7fbeb08a7e6f4fe5d3cb5cb498e243e7d76ef353a5b27c209a297dc8f0",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "abdominal pain on the lower right side",
+     "slight fever"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has abdominal pain that is increasing and a slight fever, which requires evaluation by a clinician within 24 hours.",
+    "recommended_action": "Refer the patient to a clinician for further assessment."
+   }
+  },
+  "FT08": {
+   "message_sha256": "f868e7e1fde2ec8f03d7eaa2dc9e6ce404f4e827f163bac1a944c789e8c5b2b2",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The message indicates that the baby is healthy and growing well, and the mother is seeking advice on weaning foods, which is a routine inquiry.",
+    "recommended_action": "Provide the mother with information on appropriate weaning foods for her 6-month-old baby."
+   }
+  },
+  "FT09": {
+   "message_sha256": "0014139d7a0ce378a03e939bd6a66ac88c61712eb56a0a1ccfcb79823668e8be",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "painful urination",
+     "lower belly pain"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has painful urination for 3 days and lower belly pain, which requires evaluation by a clinician within 24 hours.",
+    "recommended_action": "Refer the patient to a clinician for further assessment."
+   }
+  },
+  "FT10": {
+   "message_sha256": "f21298ad96cafe06e07f515dc928efb83f4363faa3a2b60213adbf4a4b269386",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "swelling of the leg"
+    ],
+    "danger_signs": [
+     "snake bite"
+    ],
+    "rationale": "The patient has been bitten by a snake, which is a critical situation requiring immediate medical attention due to the potential for severe complications.",
+    "recommended_action": "Refer the patient to the nearest health facility immediately."
+   }
+  },
+  "FT11": {
+   "message_sha256": "db8293416edc19e8b408663b7179448417bc4feeb90f492440777f1395c7c2bc",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "feels fine"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient is on long-term treatment for HIV and has run out of medication, which requires attention even if she currently feels fine.",
+    "recommended_action": "Refer the patient to a clinician within 24 hours for medication refill."
+   }
+  },
+  "FT12": {
+   "message_sha256": "94eb6532b2e1c1d5ed8abeea1ae8270b0816dd34e37d66bc08c858f779139e28",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "red eyes",
+     "discharge from eyes"
+    ],
+    "danger_signs": [],
+    "rationale": "The child has red eyes and discharge but does not have a fever or any other danger signs, indicating a minor issue.",
+    "recommended_action": "Advise the caregiver to keep the child's eyes clean and monitor for any changes."
+   }
+  },
+  "FT13": {
+   "message_sha256": "85fb2d81e7c93610f8f9ae41d37dfdd4c8ba88f7eb21bb98c7a9846e2bec8c40",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "mild wheeze at night"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has a known asthma history and has run out of their inhaler, which requires attention within 24 hours to prevent worsening of symptoms.",
+    "recommended_action": "Refer the patient to a clinician for evaluation and to obtain a new inhaler."
+   }
+  },
+  "FT14": {
+   "message_sha256": "81b79f7867304a1dd61333da2f512016641617ec122d70cbff11d43d248b660f",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "coughing"
+    ],
+    "danger_signs": [
+     "swallowed chemicals"
+    ],
+    "rationale": "The child has swallowed paraffin, which is a chemical, and is experiencing coughing, indicating a potential airway compromise or poisoning.",
+    "recommended_action": "Refer immediately to a healthcare facility."
+   }
+  },
+  "FT15": {
+   "message_sha256": "d23eb8b49622fb2928c33eebe627c2521e1a94148213f876391db50a93f60961",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "headache"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has a mild headache after work but is feeling better after drinking water and shows no other concerning symptoms.",
+    "recommended_action": "Advise the CHW to provide general health advice and monitor the patient."
+   }
+  },
+  "FT16": {
+   "message_sha256": "e90702014edfc84f1b86f0248e7cacee19951298168302bc129ba0aed56730b8",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "yellow skin",
+     "yellow eyes",
+     "feeding well"
+    ],
+    "danger_signs": [],
+    "rationale": "The newborn is showing signs of jaundice, which requires evaluation within 24 hours, even though the baby is feeding well.",
+    "recommended_action": "Refer the case to a clinician for further assessment."
+   }
+  },
+  "FT17": {
+   "message_sha256": "2fa420af66ef7a7932c20aa161238f9208c8ea94c0f10fc5e02855ab9ef0a42f",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "diabetes",
+     "wound on leg not healing for three weeks",
+     "foul smell from wound"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has a non-healing wound that has been present for three weeks, which requires urgent clinical attention due to the risk of infection and complications associated with diabetes.",
+    "recommended_action": "Refer the patient to a clinician within 24 hours for evaluation and treatment."
+   }
+  },
+  "FT18": {
+   "message_sha256": "e27187de9791fc7f2f1f8112b9299ff74a4801d2d5e1d7c00f142df66c9fd0db",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "very heavy bleeding",
+     "dizziness"
+    ],
+    "danger_signs": [
+     "bleeding"
+    ],
+    "rationale": "The patient is experiencing very heavy bleeding and dizziness following a miscarriage, which are serious symptoms that require immediate medical attention.",
+    "recommended_action": "Refer the patient to a clinician immediately."
+   }
+  },
+  "FT19": {
+   "message_sha256": "bfb5c9b3dca774855e197d580af7c0f818b71002bbb3c61321ccf6ae46156ade",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "toothache",
+     "eating soft food"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has a toothache but is eating soft food and shows no signs of swelling or other urgent symptoms, indicating a stable condition.",
+    "recommended_action": "Advise the caregiver to schedule a dental check-up."
+   }
+  },
+  "FT20": {
+   "message_sha256": "22d3c655a4a16ca2e150048281830d0cb908af54d1e3d52cb45bd73cf8e9edb4",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "fever",
+     "diarrhoea six times today",
+     "tiredness"
+    ],
+    "danger_signs": [],
+    "rationale": "The child is under 5 years old with fever and has had frequent diarrhoea, which requires attention within 24 hours even if they are drinking.",
+    "recommended_action": "Refer the child to a clinician within 24 hours."
+   }
+  },
+  "FT21": {
+   "message_sha256": "2784adc5f1403863bd134705cfeb9c93cab3080ef47155b12a904561f6637544",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "burns on the forearm",
+     "blistering"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has burns with blisters, which require medical attention within 24 hours to prevent infection and manage pain.",
+    "recommended_action": "Refer the patient to a clinician for evaluation and treatment."
+   }
+  },
+  "FT22": {
+   "message_sha256": "bfc387a2261e10c8a820577a08de5b75cd33ee2f49755ba30a9a207c4c3e0ae2",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The caregiver is asking about a routine health matter and reports that all children are well, with no symptoms or danger signs present.",
+    "recommended_action": "Provide the caregiver with information about the next deworming day."
+   }
+  },
+  "FT23": {
+   "message_sha256": "28b44248d1724e4c867a44eabe946a5a9c31cfac5e3b31c9af8d52f995a1d690",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "fever",
+     "crying"
+    ],
+    "danger_signs": [
+     "stiff neck"
+    ],
+    "rationale": "The child is under 2 months with fever and has a stiff neck, which are danger signs that require immediate attention.",
+    "recommended_action": "Refer the child to a healthcare facility immediately."
+   }
+  },
+  "FT24": {
+   "message_sha256": "a5aa2d6a97971cf5ebf7df2e29a88ef271fd206d95b88de14f90a5203f2c1e0d",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "low mood",
+     "poor sleep",
+     "eating okay"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient is stable, eating well, and does not exhibit any urgent or emergency symptoms despite experiencing low mood and poor sleep.",
+    "recommended_action": "Advise the CHW to provide support and suggest a follow-up for mental health resources."
+   }
+  },
+  "GS01": {
+   "message_sha256": "397b16b9c60c2b59f1ae71252133c0948765d7b4e377cba5ba752b0feb589a26",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "convulsions",
+     "not waking up"
+    ],
+    "danger_signs": [
+     "convulsions",
+     "unconsciousness"
+    ],
+    "rationale": "The child is experiencing convulsions and is not waking up, which are both danger signs indicating a medical emergency.",
+    "recommended_action": "Refer the child immediately to a clinician."
+   }
+  },
+  "GS02": {
+   "message_sha256": "3c75467cfa98906eea18cb3106a6d3f7c5f9dc087cb8c8fad59ad90d47ea6310",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The child is playful and drinking well, indicating no immediate danger signs or severe symptoms.",
+    "recommended_action": "Advise the caregiver on routine care and monitoring for the fever."
+   }
+  },
+  "GS03": {
+   "message_sha256": "7913fc678c6282eb72b548cb2d6e3113eaa88b780bd9bd49f4884ecd1e84cff5",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "heavy vaginal bleeding",
+     "dizziness"
+    ],
+    "danger_signs": [
+     "heavy vaginal bleeding",
+     "dizziness"
+    ],
+    "rationale": "The patient is experiencing heavy vaginal bleeding and dizziness, which are both danger signs in pregnancy that require immediate attention.",
+    "recommended_action": "Refer the patient to a healthcare facility immediately."
+   }
+  },
+  "GS04": {
+   "message_sha256": "3b4b536c40e9b7371a5576307732d46bfec44efe89a1d15a085d4c916af9f797",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "fever",
+     "not breastfeeding"
+    ],
+    "danger_signs": [
+     "fever in a baby under 2 months",
+     "unable to drink"
+    ],
+    "rationale": "The baby is under 2 months old and has a fever along with an inability to breastfeed, which are critical danger signs that require immediate attention.",
+    "recommended_action": "Refer the case to a healthcare facility immediately."
+   }
+  },
+  "GS05": {
+   "message_sha256": "5c9704afdc4c4753aaa9d3f7cf820edbb79e4d4787e262b5173b815680b931d0",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "fever",
+     "joint pains"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has a fever and joint pains, which are concerning symptoms that require evaluation within 24 hours, even though he is currently walking and eating.",
+    "recommended_action": "Refer the patient to a clinician for further evaluation."
+   }
+  },
+  "GS06": {
+   "message_sha256": "4d5c0621d838d39d61472e4e4f0f5eaa4c0f862f7e49cc9a599ca2d30320dc57",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The patient is stable, feels well, and is requesting a refill for her blood pressure medication with sufficient time before running out.",
+    "recommended_action": "Advise the CHW to assist the patient with the medication refill process."
+   }
+  },
+  "GS07": {
+   "message_sha256": "ad9037ad6ee7c3d127f1d242c600668cade5590ac7f430bdec934b74b2849781",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "chest pain",
+     "sweating"
+    ],
+    "danger_signs": [
+     "breathing difficulty"
+    ],
+    "rationale": "The patient is experiencing chest pain and excessive sweating, which are concerning symptoms that may indicate a serious condition requiring immediate attention.",
+    "recommended_action": "Refer the patient to a healthcare facility immediately."
+   }
+  },
+  "GS08": {
+   "message_sha256": "9d7142fceb017b4ea1310665883384c24ed396f5d3f42f42865be4ed8c77fbb6",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "small bruise on the knee",
+     "walking normally",
+     "playing normally"
+    ],
+    "danger_signs": [],
+    "rationale": "The child is stable, active, and has no danger signs, indicating that this is a minor complaint.",
+    "recommended_action": "Advise the caregiver to monitor the bruise and ensure the child continues to play normally."
+   }
+  },
+  "GS09": {
+   "message_sha256": "38956c75c02a7ec1678b8934c8c96cf7e4c355d92317172ba8072ce5b5e3b6f6",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "excessive sleepiness"
+    ],
+    "danger_signs": [
+     "thoughts of self-harm",
+     "overdose"
+    ],
+    "rationale": "The patient has intentionally ingested a large amount of medication, which poses a serious risk to their health and requires immediate attention.",
+    "recommended_action": "Refer the patient to a healthcare facility immediately."
+   }
+  },
+  "GS10": {
+   "message_sha256": "ef8cba970692bfa61cde27d01338656c9c60e4db0f4043c64296a49e206a617b",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "fever",
+     "severe headache",
+     "confusion",
+     "does not recognise mother"
+    ],
+    "danger_signs": [
+     "confusion"
+    ],
+    "rationale": "The patient is showing signs of confusion, which is a danger sign indicating a potential emergency situation that requires immediate attention.",
+    "recommended_action": "Refer the patient to a healthcare facility immediately."
+   }
+  },
+  "GS11": {
+   "message_sha256": "3549e100b5d4c87226ce1cc71f5db53061b14e4bd538e2ea5e7d2391ad4fd3a4",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "watery diarrhoea 8 times",
+     "very thirsty",
+     "able to drink"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has watery diarrhoea for more than a day and is very thirsty, indicating a need for medical attention within 24 hours.",
+    "recommended_action": "Refer the patient to a clinician for further evaluation and management."
+   }
+  },
+  "GS12": {
+   "message_sha256": "df4e4af759d526bd1e466db75edc9451081bbcb43ca4d059e4d42364f3461c6d",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The message indicates a request for nutrition advice for a healthy family, with no reported symptoms or danger signs.",
+    "recommended_action": "Advise the CHW to provide nutrition information and resources to the caregiver."
+   }
+  },
+  "H01": {
+   "message_sha256": "eecce738f01532a392a9b7ca495b0872935a784e37623317e4ba7dfda77d342b",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "fever"
+    ],
+    "danger_signs": [],
+    "rationale": "The child has a fever, which is a concern for a child under 5, even though they are currently drinking and playing.",
+    "recommended_action": "Refer the child to a clinician within 24 hours for further evaluation."
+   }
+  },
+  "H02": {
+   "message_sha256": "d7b0a228e41b86c20f15937e287f39b28105c003eed1fbbbc3b9d9a7070fd202",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "fever"
+    ],
+    "danger_signs": [],
+    "rationale": "The child is under 5 years old and has had a fever for more than a day, which requires attention within 24 hours even if they are eating well.",
+    "recommended_action": "Refer the child to a clinician within 24 hours."
+   }
+  },
+  "H03": {
+   "message_sha256": "ee2f78168a86a86d1aba26f4edcb971cb2584a9e57923a410cc9d7a5a28363a4",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "stopped taking TB treatment",
+     "upset stomach"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient is on long-term treatment for TB and has stopped her medication, which requires attention within 24 hours to prevent complications.",
+    "recommended_action": "Refer the patient to a clinician for evaluation and management of her treatment."
+   }
+  },
+  "H04": {
+   "message_sha256": "55813a595bb56bdc55ccab3fc6245571e5ccbd2d0c22bf618a03a8ff0d7d51d2",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The patient is on long-term treatment for epilepsy and has run out of medication, which requires attention within 24 hours to prevent potential seizures.",
+    "recommended_action": "Refer the patient to a clinician for evaluation and medication refill."
+   }
+  },
+  "H05": {
+   "message_sha256": "e7e887b7130fc7bfb4eec29d21dd6e5ecb7960b22e95ffd2946c370800ab110f",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [],
+    "danger_signs": [
+     "waters breaking"
+    ],
+    "rationale": "The patient is 36 weeks pregnant and has experienced her waters breaking, which is a significant concern that requires immediate medical attention, especially since there are no contractions yet.",
+    "recommended_action": "Refer the patient to a healthcare facility immediately."
+   }
+  },
+  "H06": {
+   "message_sha256": "798d71eae2fdd3c66ee68001ffa494930ea59b975be14f7b360dec9c4e11887b",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "fever",
+     "unusual sleepiness",
+     "poor feeding"
+    ],
+    "danger_signs": [
+     "fever in a baby under 2 months",
+     "unable to drink or breastfeed"
+    ],
+    "rationale": "The baby is under 2 months old and has a fever along with poor feeding and unusual sleepiness, which are critical danger signs that require immediate attention.",
+    "recommended_action": "Refer the case to a healthcare facility immediately."
+   }
+  },
+  "H07": {
+   "message_sha256": "6bf6c0eb2c3b627c29c02b59883b910ced3061f95a0ef0034f4b923d1f943b71",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [],
+    "danger_signs": [
+     "poisoning",
+     "swallowed chemicals"
+    ],
+    "rationale": "The child has ingested rat poison, which is a serious situation that requires immediate medical attention regardless of their current state.",
+    "recommended_action": "Refer the case to a healthcare facility immediately."
+   }
+  },
+  "H08": {
+   "message_sha256": "a6801c4cde6ca124ef6a28be4589394b3b34661768e8bdea2f7e52e63e4755ae",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "cut on foot",
+     "red area",
+     "warm area",
+     "swollen area"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient has a wound that is red, warm, and swollen, indicating a possible infection or complication that requires attention within 24 hours.",
+    "recommended_action": "Refer the patient to a clinician for evaluation and treatment."
+   }
+  },
+  "H09": {
+   "message_sha256": "6f03733ed7d09c35800508823ca4299e7a75f7c1bb8dad382cefc47984a3fc19",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "cannot speak properly",
+     "face drooping on one side"
+    ],
+    "danger_signs": [
+     "sudden weakness of one side of the body or face"
+    ],
+    "rationale": "The patient is exhibiting signs of sudden weakness and difficulty speaking, which are critical danger signs that require immediate medical attention.",
+    "recommended_action": "Refer the patient to a healthcare facility immediately."
+   }
+  },
+  "H10": {
+   "message_sha256": "6f49391f7506b00c1c577d04cb8432d71e8d59f2330b1ac2af52549bf5a197dd",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The patient is a healthy individual seeking information about cervical cancer screening, which is a routine health inquiry.",
+    "recommended_action": "Advise the CHW to provide information on where to access cervical cancer screening services."
+   }
+  },
+  "H11": {
+   "message_sha256": "21ef16e8f7f6e75d6c3e0b2d3fb7f19d79f19cd070515167a51dc10a54c4656d",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [],
+    "danger_signs": [],
+    "rationale": "The caregiver is asking for a routine check-up date for a healthy child, indicating no urgent health concerns.",
+    "recommended_action": "Provide the caregiver with the next clinic date for the child."
+   }
+  },
+  "H12": {
+   "message_sha256": "8d4bd64589edb5945a48ba3ac54f699aa55db970d69efe594e76d7d50e191f68",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "acne on the face"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient is otherwise well and has no danger signs or urgent symptoms.",
+    "recommended_action": "Advise the CHW to provide health advice regarding skin care and consider a follow-up for further assessment if needed."
+   }
+  },
+  "H13": {
+   "message_sha256": "ca8e5fe08e8107f00006fce01f468bd9a4fd51de1059e9f004232e6aa49ecdc0",
+   "output": {
+    "urgency": "URGENT",
+    "symptoms": [
+     "bloody diarrhoea",
+     "drinking well",
+     "alert"
+    ],
+    "danger_signs": [],
+    "rationale": "The child has bloody diarrhoea, which is a concerning symptom that requires evaluation by a clinician within 24 hours, even though the child is currently drinking well and alert.",
+    "recommended_action": "Refer the child to a clinician for further evaluation."
+   }
+  },
+  "H14": {
+   "message_sha256": "d553fb8030f6daf5b69780050f6f08632c07f3b09f30b8adcb3fabc2e31ffe55",
+   "output": {
+    "urgency": "EMERGENCY",
+    "symptoms": [
+     "feels sad",
+     "cries most days",
+     "thinks of harming herself"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient is experiencing thoughts of self-harm, which is a critical danger sign that requires immediate attention.",
+    "recommended_action": "Refer the patient to a clinician immediately for urgent mental health support."
+   }
+  },
+  "H15": {
+   "message_sha256": "2b6283851435b3ae3bab931ec33835bad659fe05526bedf787d187a278d987a0",
+   "output": {
+    "urgency": "ROUTINE",
+    "symptoms": [
+     "long-standing back pain"
+    ],
+    "danger_signs": [],
+    "rationale": "The patient is managing her daily work and has no new or worsening symptoms that indicate urgency.",
+    "recommended_action": "Advise the CHW to check in on her regularly and provide health advice as needed."
+   }
+  }
+ }
+}

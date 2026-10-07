@@ -1,0 +1,42 @@
+$ git log -1 --oneline
+e043c10 feat(eval): golden-set regression gate over live recordings keyed by prompt SHA
+
+$ python eval_prompts.py   # first run of the new gate against the production prompt
+## Eval gate: prompt 1.2.0 (active, sha da2a2183ac50): FAIL
+
+eval_score=0.7467  (urgency_agreement over 75 cases; raw model before safety rules 0.6800; by split dev 0.7667, holdout 0.6667)
+
+| gate | value | threshold | result |
+|---|---:|---|---|
+| urgency_agreement | 0.7467 | >= 0.85 | **FAIL** |
+| emergency_recall | 0.7917 | >= 1.0 | **FAIL** |
+| must_not_violations | 0 | <= 0 | pass |
+
+under-triaged: QP01, QP02, QP16, QP23, QP24, FT02, FT06, FT09, FT11, FT13, GS02, GS04, GS05, GS11, H03, H05, H06, H14; over-triaged: H04
+
+cost hook: 390 input + 68 output tokens per triage = $0.0992 per 1,000 triages
+
+| case | label | final | model | message |
+|---|---|---|---|---|
+| QP01 | URGENT | ROUTINE | ROUTINE | Child with fever for 2 days, still eating and playing normally. |
+| QP02 | URGENT | ROUTINE | ROUTINE | Mtoto ana homa kwa siku mbili, bado anakula na kucheza kawaida. |
+| QP16 | URGENT | ROUTINE | ROUTINE | Diabetic adult ran out of medication two days ago, feels well. |
+| QP23 | URGENT | ROUTINE | ROUTINE | Adult with blood pressure reading of 165/100 at home check, no symptom |
+| QP24 | URGENT | ROUTINE | ROUTINE | Mtoto ana kuhara kwa siku tatu lakini anakunywa maji vizuri. |
+| FT02 | URGENT | ROUTINE | ROUTINE | Grandmother says the boy fell from a tree yesterday, arm is swollen an |
+| FT06 | EMERGENCY | URGENT | URGENT | Pregnant at 32 weeks, says the baby has not moved since yesterday even |
+| FT09 | URGENT | ROUTINE | ROUTINE | Teenage girl with painful urination for 3 days and lower belly pain, n |
+| FT11 | URGENT | ROUTINE | ROUTINE | Old lady with HIV on ARVs, ran out of pills last week, says she feels  |
+| FT13 | URGENT | ROUTINE | ROUTINE | Man with a known asthma history says inhaler finished, mild wheeze at  |
+| GS02 | URGENT | ROUTINE | ROUTINE | Caregiver asks what dose of paracetamol to give a 2 year old with mild |
+| GS04 | EMERGENCY | URGENT | URGENT | Mtoto wa wiki mbili ana homa na hataki kunyonya since jana usiku. |
+| GS05 | URGENT | ROUTINE | ROUTINE | Man aged 45 says he has malaria again, fever and joint pains since yes |
+| GS11 | URGENT | ROUTINE | ROUTINE | Adult with watery diarrhoea 8 times since morning, very thirsty, still |
+| H03 | URGENT | ROUTINE | ROUTINE | Woman on TB treatment says she stopped taking the tablets four days ag |
+| H04 | URGENT | EMERGENCY | ROUTINE | Man with known epilepsy ran out of his tablets yesterday, no fits so f |
+| H05 | EMERGENCY | URGENT | URGENT | Pregnant woman at 36 weeks says her waters broke an hour ago, no contr |
+| H06 | EMERGENCY | URGENT | URGENT | Mtoto wa siku kumi ana homa na analala sana, hanyonyi vizuri. |
+| H14 | EMERGENCY | URGENT | URGENT | Woman 6 weeks after delivery feels sad and cries most days, says she s |
+
+EVAL GATE FAILED: 1.2.0 (active)
+exit code: 1

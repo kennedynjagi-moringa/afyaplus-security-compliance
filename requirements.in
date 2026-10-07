@@ -1,0 +1,13 @@
+# Top-level runtime dependencies. Compile to requirements.txt with:
+#   uv pip compile requirements.in -o requirements.txt --python-version 3.11
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+pydantic-settings>=2.3
+pyjwt>=2.8
+bcrypt>=4.1
+python-multipart>=0.0.9
+openai>=1.40
+pyyaml>=6
+# FastMCP is the v1 API; kept on 1.x to match the Week 6 server and its LangChain adapter.
+mcp>=1.20,<2

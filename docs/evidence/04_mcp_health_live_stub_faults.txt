@@ -1,0 +1,65 @@
+## 1. Live server (logistics_mcp_versioned.py over stdio)
+$ python scripts/check_mcp_health.py
+## MCP health (live): afyaplus-logistics 1.1.0
+
+| check | result | detail |
+|---|---|---|
+| handshake | pass | serverInfo.name='afyaplus-logistics' (expected 'afyaplus-logistics'), protocol 2025-11-25 |
+| version | pass | serverInfo.version=1.1.0 (config/triage.yaml mcp.version=1.1.0) |
+| lock_version | pass | lock generated for 1.1.0, server reports 1.1.0 |
+| required_tools | pass | listed: check_stock, find_clinics |
+| schema_lock | pass | all input schemas match the lock |
+| smoke_call | pass | check_stock({'clinic_id': 'KSM-001', 'item': 'oxytocin_10iu'}) -> isError=False, ok=True, quantity=0, status='out_of_stock' |
+| error_contract | pass | check_stock({'clinic_id': 'not-an-id', 'item': 'oxytocin_10iu'}) -> isError=True, error.code=INVALID_CLINIC_ID |
+| resource | pass | clinics://catalogue -> 1325 chars |
+
+MCP HEALTHY (exit 0)
+exit code: 0
+
+## 2. Fallback: contract stub generated from mcp_schema.lock.json, same checks and exit codes
+$ python scripts/check_mcp_health.py --target stub
+## MCP health (stub): afyaplus-logistics 1.1.0
+
+| check | result | detail |
+|---|---|---|
+| handshake | pass | serverInfo.name='afyaplus-logistics' (expected 'afyaplus-logistics'), protocol 2025-11-25 |
+| version | pass | serverInfo.version=1.1.0 (config/triage.yaml mcp.version=1.1.0) |
+| lock_version | pass | lock generated for 1.1.0, server reports 1.1.0 |
+| required_tools | pass | listed: check_stock, find_clinics |
+| schema_lock | pass | all input schemas match the lock |
+| smoke_call | pass | check_stock({'clinic_id': 'KSM-001', 'item': 'oxytocin_10iu'}) -> isError=False, ok=True, quantity=0, status='out_of_stock' |
+| error_contract | pass | check_stock({'clinic_id': 'not-an-id', 'item': 'oxytocin_10iu'}) -> isError=True, error.code=INVALID_CLINIC_ID |
+| resource | pass | clinics://catalogue -> 41 chars |
+
+MCP HEALTHY (exit 0)
+exit code: 0
+
+## 3. Fault matrix (MCP_STUB_FAULT=<fault> python scripts/check_mcp_health.py --target stub --timeout 5)
+
+### fault=drop_tool -> exit 1
+| required_tools | **FAIL** | listed: find_clinics; MISSING: check_stock |
+| schema_lock | **FAIL** | removed: check_stock: bump SERVER_VERSION (semver) and regenerate the lock |
+| smoke_call | **FAIL** | check_stock not listed, cannot call it |
+MCP PROBE FAILED: assertion (exit 1)
+
+### fault=wrong_version -> exit 1
+| version | **FAIL** | serverInfo.version=9.9.9 (config/triage.yaml mcp.version=1.1.0) |
+| lock_version | **FAIL** | lock generated for 1.1.0, server reports 9.9.9 |
+MCP PROBE FAILED: assertion (exit 1)
+
+### fault=schema_drift -> exit 1
+| schema_lock | **FAIL** | changed: check_stock: bump SERVER_VERSION (semver) and regenerate the lock |
+MCP PROBE FAILED: assertion (exit 1)
+
+### fault=tool_error -> exit 1
+| smoke_call | **FAIL** | check_stock({'clinic_id': 'KSM-001', 'item': 'oxytocin_10iu'}) -> isError=True, ok=False, quantity=None, status=None |
+MCP PROBE FAILED: assertion (exit 1)
+
+### fault=crash -> exit 2
+UNREACHABLE: McpError: Connection closed
+MCP PROBE FAILED: unreachable (exit 2)
+
+### fault=hang -> exit 2
+UNREACHABLE: no complete answer within 5s
+MCP PROBE FAILED: unreachable (exit 2)
+

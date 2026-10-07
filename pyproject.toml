@@ -1,0 +1,22 @@
+[project]
+name = "afyaplus-llmops-cicd"
+description = "AfyaPlus Week 8: versioned prompts, config and MCP behind a gated CI/CD pipeline"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S"]
+# S101: asserts are how pytest works. S603/S607: subprocess calls are to our own scripts.
+ignore = ["S101", "S603", "S607"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S105", "S106"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

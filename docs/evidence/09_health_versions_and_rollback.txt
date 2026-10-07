@@ -1,0 +1,115 @@
+# Release image afyaplus-triage:1.3.0 deployed with docker compose (DEPLOY_ENV=staging, MODEL_BACKEND=replay)
+
+$ export DEPLOY_ENV=staging; IMAGE=afyaplus-triage:1.3.0 docker compose up -d --wait
+(compose up: afyaplus-triage:1.3.0 Up 5 seconds (healthy))
+
+$ curl -s localhost:8080/health
+{
+    "status": "ok",
+    "service": "afyaplus-triage",
+    "release": "1.3.0",
+    "image_tag": "afyaplus-triage:1.3.0",
+    "git_sha": "ff0c29f8e753",
+    "environment": "staging",
+    "model_backend": "replay",
+    "prompt_bundle": "1.3.0",
+    "prompt_active": {
+        "version": "1.2.0",
+        "sha256": "da2a2183ac50a4f40eaf0b8ab07c2cae2cca44843faf6ff0a53bfe8a84ae7cbc",
+        "traffic_percent": 90
+    },
+    "prompt_candidate": {
+        "version": "1.3.0-candidate",
+        "sha256": "20f536db419369a964ed642e89366b43d48bce84fd3b32eefae50b1c8e3acb55",
+        "traffic_percent": 10
+    },
+    "rollback_override": false,
+    "config_sha256": "62d7649a7d4ff3ee1f790ea2c5f08208deefee7af789677cc48809d15ddfbaa3",
+    "model": "gpt-4o-mini-2024-07-18",
+    "model_version": "2026.10.0",
+    "mcp_server": "afyaplus-logistics",
+    "mcp_version": "1.1.0"
+}
+
+$ curl -s localhost:8080/ready
+{"ready":true,"mcp":{"name":"afyaplus-logistics","version":"1.1.0","protocol":"2025-11-25"},"exit_code":0,"failed_checks":[],"unreachable":null}
+
+$ curl -si -X POST localhost:8080/v1/triage -H 'Authorization: Bearer ...' -H 'X-Routing-Key: chw-device-0000' -d '{"message": "Child with fever for 2 days, still eating and playing normally.", "patient_age_years": 1}'
+x-prompt-version: 1.2.0
+x-prompt-sha: da2a2183ac50
+x-prompt-arm: active
+x-release: 1.3.0
+body: {"urgency": "ROUTINE", "recommended_action": "Monitor the child's condition and provide standard advice during the next scheduled visit.", "prompt_version": "1.2.0", "arm": "active", "backend": "replay", "model": "replay:da2a2183ac50"}
+
+$ curl -si -X POST localhost:8080/v1/triage -H 'Authorization: Bearer ...' -H 'X-Routing-Key: chw-device-0001' -d '{"message": "Child with fever for 2 days, still eating and playing normally.", "patient_age_years": 1}'
+x-prompt-version: 1.3.0-candidate
+x-prompt-sha: 20f536db4193
+x-prompt-arm: candidate
+x-release: 1.3.0
+body: {"urgency": "URGENT", "recommended_action": "Refer the child to a clinician within 24 hours.", "prompt_version": "1.3.0-candidate", "arm": "candidate", "backend": "replay", "model": "replay:20f536db4193"}
+
+# Same CHW message, two routing keys: the active arm (1.2.0) says ROUTINE, the candidate (1.3.0) says URGENT: the fix in action.
+
+$ docker image inspect afyaplus-triage:1.3.0 --format '{{.Id}}  {{json .Config.Labels}}'
+sha256:550e67da89aead0c4b4a52981b41314d8b48ed027e1dc56d4b53a28a5f56046a  {"ai.afyaplus.mcp.version":"1.1.0","ai.afyaplus.model.version":"2026.10.0","ai.afyaplus.prompt.active":"1.2.0","ai.afyaplus.prompt.active.sha256":"da2a2183ac50a4f40eaf0b8ab07c2cae2cca44843faf6ff0a53bfe8a84ae7cbc","ai.afyaplus.prompt.candidate":"1.3.0-candidate","org.opencontainers.image.revision":"ff0c29f8e753","org.opencontainers.image.title":"afyaplus-triage","org.opencontainers.image.version":"1.3.0"}
+
+================ Rollback lever 1: kill the canary (same image) ================
+$ CANDIDATE_PERCENT=0 docker compose up -d --wait && curl -s localhost:8080/health
+(compose up: afyaplus-triage:1.3.0 Up 5 seconds (healthy))
+release=1.3.0 image=afyaplus-triage:1.3.0 git=ff0c29f8e753 env=staging
+prompt_active=1.2.0 sha=da2a2183ac50 share=100%  candidate=1.3.0-candidate share=0%
+rollback_override=False mcp=afyaplus-logistics 1.1.0 model_version=2026.10.0 config_sha=62d7649a7d4f
+
+================ Rollback lever 2: pin every request to prompt 1.2.0 (same image) ================
+$ PROMPT_VERSION=1.2.0 docker compose up -d --wait && curl -s localhost:8080/health
+(compose up: afyaplus-triage:1.3.0 Up 5 seconds (healthy))
+release=1.3.0 image=afyaplus-triage:1.3.0 git=ff0c29f8e753 env=staging
+prompt_active=1.2.0 sha=da2a2183ac50 share=100%  candidate=None share=None%
+rollback_override=True mcp=afyaplus-logistics 1.1.0 model_version=2026.10.0 config_sha=62d7649a7d4f
+$ PROMPT_VERSION=1.2.0 python scripts/verify_deploy.py
+## Deployed versions (afyaplus-triage:1.3.0, git ff0c29f8e753, env staging)
+
+PASS  health_200         status 200
+PASS  release            1.3.0 vs 1.3.0
+PASS  prompt_bundle      1.3.0
+PASS  prompt_active_sha  1.2.0 da2a2183ac50 vs 1.2.0 da2a2183ac50
+PASS  prompt_candidate   None vs None
+PASS  config_sha         62d7649a7d4f
+PASS  mcp_version        1.1.0
+PASS  model_version      2026.10.0
+PASS  rollback_flag      True
+PASS  ready_mcp_probe    status 200, mcp {'name': 'afyaplus-logistics', 'version': '1.1.0', 'protocol': '2025-11-25'}, failed []
+
+DEPLOY VERIFY OK
+
+================ Rollback lever 3: previous release image ================
+$ IMAGE=afyaplus-triage:1.2.0 docker compose up -d --wait && curl -s localhost:8080/health
+(compose up: afyaplus-triage:1.2.0 Up 6 seconds (healthy))
+release=1.2.0 image=afyaplus-triage:1.2.0 git=de3c39a46d3a env=staging
+prompt_active=1.2.0 sha=da2a2183ac50 share=100%  candidate=None share=None%
+rollback_override=False mcp=afyaplus-logistics 1.0.0 model_version=2026.10.0 config_sha=dbf4ed97f271
+$ (in a checkout of v1.2.0) python scripts/verify_deploy.py
+## Deployed versions (afyaplus-triage:1.2.0, git de3c39a46d3a, env staging)
+
+PASS  health_200         status 200
+PASS  release            1.2.0 vs 1.2.0
+PASS  prompt_bundle      1.2.0
+PASS  prompt_active_sha  1.2.0 da2a2183ac50 vs 1.2.0 da2a2183ac50
+PASS  prompt_candidate   None vs None
+PASS  config_sha         dbf4ed97f271
+PASS  mcp_version        1.0.0
+PASS  model_version      2026.10.0
+PASS  rollback_flag      False
+PASS  ready_mcp_probe    status 200, mcp {'name': 'afyaplus-logistics', 'version': '1.0.0', 'protocol': '2025-11-25'}, failed []
+
+DEPLOY VERIFY OK
+$ docker compose exec -T triage python scripts/check_mcp_health.py | tail -1
+MCP HEALTHY (exit 0)
+
+================ Roll forward: afyaplus-triage:1.3.0 with config defaults ================
+$ IMAGE=afyaplus-triage:1.3.0 docker compose up -d --wait && curl -s localhost:8080/health
+(compose up: afyaplus-triage:1.3.0 Up 5 seconds (healthy))
+release=1.3.0 image=afyaplus-triage:1.3.0 git=ff0c29f8e753 env=staging
+prompt_active=1.2.0 sha=da2a2183ac50 share=90%  candidate=1.3.0-candidate share=10%
+rollback_override=False mcp=afyaplus-logistics 1.1.0 model_version=2026.10.0 config_sha=62d7649a7d4f
+DEPLOY VERIFY OK

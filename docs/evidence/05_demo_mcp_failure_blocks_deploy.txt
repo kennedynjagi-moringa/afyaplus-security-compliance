@@ -1,0 +1,119 @@
+local pipeline: ref=main commit=7bc56b65d035 dirty=no demo_failure=mcp mcp_target=live
+
+================ stage: lint-test ================
+All checks passed!
+PASS  config_and_pin_parse       config/triage.yaml, prompts/pin.json
+PASS  bundle_matches_release     pin.json bundle_version=1.3.0, config release=1.3.0
+PASS  no_unpinned_prompts        every prompts/*.txt is pinned
+PASS  prompt_1.2.0               triage_system_v1.2.0.txt sha256 da2a2183ac50 (active)
+PASS  prompt_1.3.0-candidate     triage_system_v1.3.0-candidate.txt sha256 20f536db4193 (candidate)
+PASS  active_prompt_pinned       config prompt_version=1.2.0, pin status=active
+PASS  single_active_prompt       one active prompt
+PASS  candidate_prompt_pinned    candidate=1.3.0-candidate at 10% in ['staging'], pin status=candidate
+PASS  recording_1.2.0            fixtures/responses/da2a2183ac50.json
+PASS  waiver_1.2.0               urgency_agreement, emergency_recall waived by clinical_ops, ml-eng until 2026-11-30 (54 days left)
+PASS  recording_1.3.0-candidate  fixtures/responses/20f536db4193.json
+PASS  mcp_version_aligned        SERVER_VERSION=1.1.0, config mcp.version=1.1.0, lock=afyaplus-logistics 1.1.0
+PASS  mcp_required_tools_locked  required ['find_clinics', 'check_stock']
+PASS  changelog_has_release      CHANGELOG.md section ## [1.3.0]
+
+RELEASE ALIGNMENT OK
+..............................................................           [100%]
+62 passed in 15.41s
+---------------- lint-test: PASSED in 16s
+
+================ stage: eval ================
+## Eval gate: prompt 1.2.0 (active, sha da2a2183ac50): PASS (waived)
+
+eval_score=0.7467  (urgency_agreement over 75 cases; raw model before safety rules 0.6800; by split dev 0.7667, holdout 0.6667)
+
+| gate | value | threshold | result |
+|---|---:|---|---|
+| urgency_agreement | 0.7467 | >= 0.85 | WAIVED (fail) |
+| emergency_recall | 0.7917 | >= 1.0 | WAIVED (fail) |
+| must_not_violations | 0 | <= 0 | pass |
+
+under-triaged: QP01, QP02, QP16, QP23, QP24, FT02, FT06, FT09, FT11, FT13, GS02, GS04, GS05, GS11, H03, H05, H06, H14; over-triaged: H04
+
+cost hook: 390 input + 68 output tokens per triage = $0.0992 per 1,000 triages
+
+> **Baseline waiver in force until 2026-11-30** for urgency_agreement, emergency_recall, approved by clinical_ops, ml-eng (feature/eval-gate review, 2026-10-07 (roles played by the author; see README)): 1.2.0 has served production since Week 6 and scored 0.747 agreement / 0.79 emergency recall when this gate was introduced. Blocking it would also block the fix. Accepted until 1.3.0 replaces it; the code danger-sign rules stay on, and must_not is never waived.
+
+| case | label | final | model | message |
+|---|---|---|---|---|
+| QP01 | URGENT | ROUTINE | ROUTINE | Child with fever for 2 days, still eating and playing normally. |
+| QP02 | URGENT | ROUTINE | ROUTINE | Mtoto ana homa kwa siku mbili, bado anakula na kucheza kawaida. |
+| QP16 | URGENT | ROUTINE | ROUTINE | Diabetic adult ran out of medication two days ago, feels well. |
+| QP23 | URGENT | ROUTINE | ROUTINE | Adult with blood pressure reading of 165/100 at home check, no symptom |
+| QP24 | URGENT | ROUTINE | ROUTINE | Mtoto ana kuhara kwa siku tatu lakini anakunywa maji vizuri. |
+| FT02 | URGENT | ROUTINE | ROUTINE | Grandmother says the boy fell from a tree yesterday, arm is swollen an |
+| FT06 | EMERGENCY | URGENT | URGENT | Pregnant at 32 weeks, says the baby has not moved since yesterday even |
+| FT09 | URGENT | ROUTINE | ROUTINE | Teenage girl with painful urination for 3 days and lower belly pain, n |
+| FT11 | URGENT | ROUTINE | ROUTINE | Old lady with HIV on ARVs, ran out of pills last week, says she feels  |
+| FT13 | URGENT | ROUTINE | ROUTINE | Man with a known asthma history says inhaler finished, mild wheeze at  |
+| GS02 | URGENT | ROUTINE | ROUTINE | Caregiver asks what dose of paracetamol to give a 2 year old with mild |
+| GS04 | EMERGENCY | URGENT | URGENT | Mtoto wa wiki mbili ana homa na hataki kunyonya since jana usiku. |
+| GS05 | URGENT | ROUTINE | ROUTINE | Man aged 45 says he has malaria again, fever and joint pains since yes |
+| GS11 | URGENT | ROUTINE | ROUTINE | Adult with watery diarrhoea 8 times since morning, very thirsty, still |
+| H03 | URGENT | ROUTINE | ROUTINE | Woman on TB treatment says she stopped taking the tablets four days ag |
+| H04 | URGENT | EMERGENCY | ROUTINE | Man with known epilepsy ran out of his tablets yesterday, no fits so f |
+| H05 | EMERGENCY | URGENT | URGENT | Pregnant woman at 36 weeks says her waters broke an hour ago, no contr |
+| H06 | EMERGENCY | URGENT | URGENT | Mtoto wa siku kumi ana homa na analala sana, hanyonyi vizuri. |
+| H14 | EMERGENCY | URGENT | URGENT | Woman 6 weeks after delivery feels sad and cries most days, says she s |
+
+## Eval gate: prompt 1.3.0-candidate (candidate, sha 20f536db4193): PASS
+
+eval_score=0.9733  (urgency_agreement over 75 cases; raw model before safety rules 0.9733; by split dev 0.9833, holdout 0.9333)
+
+| gate | value | threshold | result |
+|---|---:|---|---|
+| urgency_agreement | 0.9733 | >= 0.85 | pass |
+| emergency_recall | 1.0 | >= 1.0 | pass |
+| must_not_violations | 0 | <= 0 | pass |
+| no_regression_vs_active | 0.9733 | >= 0.7267 | pass |
+
+under-triaged: GS02; over-triaged: H04
+
+cost hook: 695 input + 69 output tokens per triage = $0.1456 per 1,000 triages
+
+| case | label | final | model | message |
+|---|---|---|---|---|
+| GS02 | URGENT | ROUTINE | ROUTINE | Caregiver asks what dose of paracetamol to give a 2 year old with mild |
+| H04 | URGENT | EMERGENCY | URGENT | Man with known epilepsy ran out of his tablets yesterday, no fits so f |
+
+EVAL GATE PASSED: 1.2.0=0.7467 (WAIVED until 2026-11-30), 1.3.0-candidate=0.9733
+---------------- eval: PASSED in 0s
+
+================ stage: mcp-health ================
+## MCP health (live): afyaplus-logistics 1.1.0
+
+| check | result | detail |
+|---|---|---|
+| handshake | pass | serverInfo.name='afyaplus-logistics' (expected 'afyaplus-logistics'), protocol 2025-11-25 |
+| version | pass | serverInfo.version=1.1.0 (config/triage.yaml mcp.version=1.1.0) |
+| lock_version | pass | lock generated for 1.1.0, server reports 1.1.0 |
+| required_tools | pass | listed: check_stock, find_clinics |
+| schema_lock | pass | all input schemas match the lock |
+| smoke_call | pass | check_stock({'clinic_id': 'KSM-001', 'item': 'oxytocin_10iu'}) -> isError=False, ok=True, quantity=0, status='out_of_stock' |
+| error_contract | pass | check_stock({'clinic_id': 'not-an-id', 'item': 'oxytocin_10iu'}) -> isError=True, error.code=INVALID_CLINIC_ID |
+| resource | pass | clinics://catalogue -> 1325 chars |
+
+MCP HEALTHY (exit 0)
+
+## demo_failure=mcp: probing a server that dropped check_stock
+## MCP health (stub): afyaplus-logistics 1.1.0
+
+| check | result | detail |
+|---|---|---|
+| handshake | pass | serverInfo.name='afyaplus-logistics' (expected 'afyaplus-logistics'), protocol 2025-11-25 |
+| version | pass | serverInfo.version=1.1.0 (config/triage.yaml mcp.version=1.1.0) |
+| lock_version | pass | lock generated for 1.1.0, server reports 1.1.0 |
+| required_tools | **FAIL** | listed: find_clinics; MISSING: check_stock |
+| schema_lock | **FAIL** | removed: check_stock: bump SERVER_VERSION (semver) and regenerate the lock |
+| smoke_call | **FAIL** | check_stock not listed, cannot call it |
+| resource | pass | clinics://catalogue -> 41 chars |
+
+MCP PROBE FAILED: assertion (exit 1)
+---------------- mcp-health: FAILED (exit 1) in 3s
+
+PIPELINE FAILED at stage 'mcp-health': downstream stages (incl. build-deploy) did not run.

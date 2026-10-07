@@ -1,0 +1,39 @@
+# AfyaPlus triage runtime config. It ships inside the image and is versioned with the release.
+# prompt_loader.TriageConfig validates every field at startup, and check_prompt_pin.py checks it in CI.
+# /health reports the SHA-256 of this file, so you can see which config a running container uses.
+
+release: 1.3.1                 # git tag v1.3.1 == image afyaplus-triage:1.3.1 == prompts/pin.json bundle_version
+prompt_version: 1.2.0          # the prompt that serves all traffic; must be pinned in prompts/pin.json
+
+candidate:                     # canary prompt (Thursday Lab 1, ab_prompt_flag.py)
+  prompt_version: 1.3.0-candidate   # null = no canary
+  traffic_percent: 10          # share of request keys routed to the candidate
+  environments: [staging]      # the candidate never serves outside these environments
+
+model:
+  provider: openai
+  name: gpt-4o-mini-2024-07-18 # pinned snapshot, so the model can't change under a fixed prompt
+  model_version: 2026.10.0     # AfyaPlus model artefact version; bumped by a retrain (stub: scripts/retrain_stub.py)
+  temperature: 0
+  max_output_tokens: 400
+  timeout_s: 20
+  pricing_usd_per_1m: {input: 0.15, output: 0.60}   # cost hook, same rates as Week 7 api/pricing.py
+
+mcp:
+  server: afyaplus-logistics
+  version: 1.1.0               # must equal SERVER_VERSION in logistics_mcp_versioned.py and mcp_schema.lock.json
+  required_tools: [find_clinics, check_stock]
+
+eval:                          # Deliverable 3: the regression gate (eval_prompts.py)
+  golden_set: evals/golden.jsonl
+  quarantine: fixtures/quarantine.json
+  metric: urgency_agreement    # final urgency (after code safety rules) == clinical label
+  threshold: 0.85
+  emergency_recall_min: 1.0    # no EMERGENCY-labelled case may be under-triaged
+  must_not_violations_max: 0   # no forbidden advice in rationale or recommended_action
+  max_regression_vs_active: 0.02
+  max_quarantined_fraction: 0.10
+
+canary:                        # go / no-go after deploy (scripts/canary_gate.py)
+  error_rate_max: 0.10
+  min_requests: 40

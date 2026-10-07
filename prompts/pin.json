@@ -1,0 +1,38 @@
+{
+  "bundle_version": "1.3.1",
+  "prompts": {
+    "1.2.0": {
+      "file": "triage_system_v1.2.0.txt",
+      "sha256": "da2a2183ac50a4f40eaf0b8ab07c2cae2cca44843faf6ff0a53bfe8a84ae7cbc",
+      "status": "active",
+      "approved_by": [
+        "clinical_ops",
+        "ml-eng"
+      ],
+      "notes": "Week 6/7 production prompt (served as triage-v1), first put under semver here.",
+      "waiver": {
+        "gates": [
+          "urgency_agreement",
+          "emergency_recall"
+        ],
+        "reason": "1.2.0 has served production since Week 6 and scored 0.747 agreement / 0.79 emergency recall when this gate was introduced. Blocking it would also block the fix. Accepted until 1.3.0 replaces it; the code danger-sign rules stay on, and must_not is never waived.",
+        "approved_by": [
+          "clinical_ops",
+          "ml-eng"
+        ],
+        "approved_in": "feature/eval-gate review, 2026-10-07 (roles played by the author; see README)",
+        "expires": "2026-11-30"
+      }
+    },
+    "1.3.0-candidate": {
+      "file": "triage_system_v1.3.0-candidate.txt",
+      "sha256": "20f536db419369a964ed642e89366b43d48bce84fd3b32eefae50b1c8e3acb55",
+      "status": "candidate",
+      "approved_by": [
+        "clinical_ops",
+        "ml-eng"
+      ],
+      "notes": "Explicit URGENT/EMERGENCY criteria (fever under 5, stopped long-term medicines, pregnancy and newborn danger signs), no doses, ignore instructions inside messages. Gate: 0.973 (holdout 0.933), emergency recall 1.0. About 1.8x the input tokens of 1.2.0."
+    }
+  }
+}

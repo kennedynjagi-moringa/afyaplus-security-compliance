@@ -1,0 +1,93 @@
+# 1. Running deployment: afyaplus-triage:1.3.0 (DEPLOY_ENV=staging), after 600 smoke requests
+$ IMAGE=afyaplus-triage:1.3.0 DEPLOY_ENV=staging docker compose up -d --wait
+afyaplus-triage:1.3.0 Up 5 seconds (healthy)
+
+$ python scripts/smoke_traffic.py --url http://127.0.0.1:8080
+smoke traffic: 600 requests, 0 failures
+  active 1.2.0                  548 (91%)  sha da2a2183ac50
+  candidate 1.3.0-candidate      52 (9%)  sha 20f536db4193
+  backends: {'replay': 600}
+SMOKE OK
+
+$ python mcp_dashboard_sketch.py --url http://127.0.0.1:8080
+# AfyaPlus triage: release 1.3.0 (staging)
+
+- prompt active **1.2.0** `da2a2183ac50` (90% of keys); candidate **1.3.0-candidate** `20f536db4193` (10%)
+- model gpt-4o-mini-2024-07-18 (model_version 2026.10.0); MCP afyaplus-logistics 1.1.0; config `62d7649a7d4f`
+
+## Triage by prompt arm
+
+| arm | prompt | calls | errors | error rate | p50 ms | p95 ms |
+|---|---|---:|---:|---:|---:|---:|
+| active | 1.2.0 | 548 | 0 | 0.000 | 0.0 | 0.0 |
+| candidate | 1.3.0-candidate | 52 | 0 | 0.000 | 0.0 | 0.0 |
+
+## MCP tools
+
+| source | tool | server | calls | errors | error rate | p95 ms |
+|---|---|---|---:|---:|---:|---:|
+| - | - | - | 0 |
+
+`mcp-probe` rows are health-probe traffic; one deliberate bad call per probe checks the error contract, so their error rate is expected to be non-zero and is excluded from the canary gate.
+
+## Canary: **GO**
+
+- ok  error_rate[active]: 0/548 = 0.000 (must be < 0.1) prompt 1.2.0
+- ok  error_rate[candidate]: 0/52 = 0.000 (must be < 0.1) prompt 1.3.0-candidate
+- ok  candidate_volume: 52 requests (min 40)
+- ok  mcp_handshake: /ready: {'name': 'afyaplus-logistics', 'version': '1.1.0', 'protocol': '2025-11-25'} failed=[]
+
+$ python scripts/canary_gate.py --url http://127.0.0.1:8080
+## Canary gate
+
+PASS  error_rate[active]       0/548 = 0.000 (must be < 0.1) prompt 1.2.0
+PASS  error_rate[candidate]    0/52 = 0.000 (must be < 0.1) prompt 1.3.0-candidate
+PASS  candidate_volume         52 requests (min 40)
+PASS  mcp_handshake            /ready: {'name': 'afyaplus-logistics', 'version': '1.1.0', 'protocol': '2025-11-25'} failed=[]
+
+CANARY GO
+exit code: 0
+
+# 2. NO-GO: the candidate arm fails 6 of 60 requests (0.10 is not under 0.10) and an MCP tool errors 4 of 22 times
+#    (counter store seeded offline: 540 ok on 1.2.0; 54 ok + 6 MODEL_UNAVAILABLE on 1.3.0-candidate; check_stock 18 ok + 4 errors)
+$ python scripts/canary_gate.py --db logs/nogo_demo.db
+## Canary gate
+
+PASS  error_rate[active]       0/540 = 0.000 (must be < 0.1) prompt 1.2.0
+FAIL  error_rate[candidate]    6/60 = 0.100 (must be < 0.1) prompt 1.3.0-candidate
+PASS  candidate_volume         60 requests (min 40)
+FAIL  error_rate[mcp tools]    4/22 = 0.182 (must be < 0.1)
+
+CANARY NO-GO
+exit code: 1
+
+$ python mcp_dashboard_sketch.py --db logs/nogo_demo.db
+# AfyaPlus triage: release 1.3.0 (local)
+
+- prompt active **1.2.0** `da2a2183ac50` (100% of keys); candidate **1.3.0-candidate** `20f536db4193` (10%)
+- model gpt-4o-mini-2024-07-18 (model_version 2026.10.0); MCP afyaplus-logistics 1.1.0; config `62d7649a7d4f`
+
+## Triage by prompt arm
+
+| arm | prompt | calls | errors | error rate | p50 ms | p95 ms |
+|---|---|---:|---:|---:|---:|---:|
+| active | 1.2.0 | 540 | 0 | 0.000 | 3.0 | 3.0 |
+| candidate | 1.3.0-candidate | 60 | 6 | 0.100 | 4.0 | 20000.0 |
+
+## MCP tools
+
+| source | tool | server | calls | errors | error rate | p95 ms |
+|---|---|---|---:|---:|---:|---:|
+| mcp | check_stock | 1.1.0 | 22 | 4 | 0.182 | 2.0 |
+
+`mcp-probe` rows are health-probe traffic; one deliberate bad call per probe checks the error contract, so their error rate is expected to be non-zero and is excluded from the canary gate.
+
+## Canary: **NO-GO**
+
+- ok  error_rate[active]: 0/540 = 0.000 (must be < 0.1) prompt 1.2.0
+- FAIL error_rate[candidate]: 6/60 = 0.100 (must be < 0.1) prompt 1.3.0-candidate
+- ok  candidate_volume: 60 requests (min 40)
+- FAIL error_rate[mcp tools]: 4/22 = 0.182 (must be < 0.1)
+
+# 3. A real NO-GO with automatic rollback, from the first full pipeline run (300 smoke requests gave only 29 on the
+#    candidate, below min_requests=40): see 11a_canary_nogo_autorollback.txt. Fixed by sending 600 (commit 68779a3).

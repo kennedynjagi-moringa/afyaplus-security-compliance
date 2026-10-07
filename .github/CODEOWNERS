@@ -1,0 +1,28 @@
+# Who must review what (Deliverable 5: who reviews clinical-adjacent prompts).
+# Branch ruleset on main: require a pull request, 2 approvals, review from Code Owners, and the status
+# checks lint-test, eval, mcp-health, build-deploy. GitHub needs only one owner per matching line,
+# so the PR template's sign-off checklist asks for BOTH clinical_ops and ml-eng on clinical paths.
+#
+# The @afyaplus/* teams are the target org setup. In this single-author capstone repo they stand for
+# roles the author played (see README, "Fallbacks declared").
+
+*                               @afyaplus/ml-eng
+
+# Clinical-adjacent: what the model is told, what "correct" means, and which answers were recorded.
+/prompts/                       @afyaplus/clinical-ops @afyaplus/ml-eng
+/evals/                         @afyaplus/clinical-ops @afyaplus/ml-eng
+/fixtures/                      @afyaplus/clinical-ops @afyaplus/ml-eng
+/triage_engine.py               @afyaplus/clinical-ops @afyaplus/ml-eng
+/config/                        @afyaplus/ml-eng @afyaplus/clinical-ops
+/clinical_ops_change_brief.md   @afyaplus/clinical-ops
+
+# MCP tool contracts: agents in other services depend on these schemas.
+/logistics_mcp_versioned.py     @afyaplus/ml-eng @afyaplus/platform
+/mcp_schema.lock.json           @afyaplus/ml-eng @afyaplus/platform
+/clinics.json                   @afyaplus/platform @afyaplus/clinical-ops
+
+# The pipeline itself: changing a gate is a change to the rules.
+/.github/                       @afyaplus/platform @afyaplus/ml-eng
+/azure-pipelines.yml            @afyaplus/platform @afyaplus/ml-eng
+/scripts/check_mcp_health.py    @afyaplus/platform @afyaplus/ml-eng
+/eval_prompts.py                @afyaplus/ml-eng @afyaplus/clinical-ops

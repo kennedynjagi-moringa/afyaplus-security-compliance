@@ -1,0 +1,180 @@
+# AfyaPlus Week 8: gated CI/CD for versioned prompts, config and MCP (Deliverable 2).
+#
+#   lint-test ──┬── eval ────────┬── build-deploy
+#               └── mcp-health ──┘
+#
+# - lint-test     ruff, release alignment (check_prompt_pin.py), pytest (offline)
+# - eval          golden-set regression gate on the active + candidate prompts (replay of live recordings, $0)
+# - mcp-health    stdio handshake probe of the MCP server: version, required tools, schema lock, smoke call
+# - build-deploy  docker build + tag, compose up on the runner (staging stand-in), verify versions, MCP probe
+#                 inside the container, smoke traffic, canary go/no-go. It `needs` eval AND mcp-health,
+#                 so a red gate means no image is deployed.
+# Branch protection on main requires the checks "lint-test", "eval", "mcp-health" and "build-deploy".
+#
+# workflow_dispatch is the documented manual trigger (for minute-limited accounts, and for demos):
+#   demo_failure=eval  also gates the cost-trim draft prompt -> eval fails -> build-deploy is skipped
+#   demo_failure=mcp   probes the contract stub with a dropped tool -> mcp-health fails -> build-deploy skipped
+#   mcp_target=stub    use the contract stub instead of the live server (fallback, same exit codes)
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      demo_failure:
+        description: "Demonstrate a blocked deploy"
+        type: choice
+        options: [none, eval, mcp]
+        default: none
+      mcp_target:
+        description: "MCP probe target"
+        type: choice
+        options: [live, stub]
+        default: live
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  MODEL_BACKEND: replay          # no API key in CI: the gate replays the live recordings
+  DEPLOY_ENV: staging
+
+jobs:
+  lint-test:
+    name: lint-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Lint (ruff)
+        run: ruff check . --output-format github
+      - name: Release alignment (prompt pins, config, MCP version, tag)
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            python check_prompt_pin.py --tag "$GITHUB_REF_NAME"
+          else
+            python check_prompt_pin.py
+          fi
+      - name: Unit tests
+        env:
+          JWT_SECRET: ci-only-not-a-secret-${{ github.run_id }}-0123456789abcdef
+        run: python -m pytest -q --junitxml=pytest.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-junit
+          path: pytest.xml
+
+  eval:
+    name: eval
+    needs: lint-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements.txt
+      - name: Golden-set gate (active + candidate prompts)
+        run: python eval_prompts.py
+      - name: "Demo: gate the cost-trim draft (expected to FAIL and block deploy)"
+        if: github.event_name == 'workflow_dispatch' && inputs.demo_failure == 'eval'
+        run: python eval_prompts.py --prompt-file evals/demo/triage_system_v1.3.1-costtrim.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-reports
+          path: evals/reports/*.json
+
+  mcp-health:
+    name: mcp-health
+    needs: lint-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements.txt
+      - name: Probe MCP server (${{ inputs.mcp_target || 'live' }})
+        run: python scripts/check_mcp_health.py --target "${{ inputs.mcp_target || 'live' }}" --json mcp_health.json
+      - name: "Demo: probe a server that dropped check_stock (expected to FAIL and block deploy)"
+        if: github.event_name == 'workflow_dispatch' && inputs.demo_failure == 'mcp'
+        env:
+          MCP_STUB_FAULT: drop_tool
+        run: python scripts/check_mcp_health.py --target stub
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mcp-health
+          path: mcp_health.json
+
+  build-deploy:
+    name: build-deploy
+    needs: [eval, mcp-health]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HOST_PORT: "8080"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements.txt
+      - name: Build and tag image
+        id: build
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then scripts/build_and_tag.sh --release; else scripts/build_and_tag.sh; fi
+      - name: Deploy stub (compose up on the runner) + post-deploy gates
+        env:
+          IMAGE: ${{ steps.build.outputs.image }}
+        run: |
+          export JWT_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          scripts/deploy_stub.sh
+      - name: Rollback drill (same image, PROMPT_VERSION pinned to the active prompt)
+        env:
+          IMAGE: ${{ steps.build.outputs.image }}
+        run: |
+          export JWT_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          export PROMPT_VERSION="$(python -c 'from prompt_loader import load_config; print(load_config().prompt_version)')"
+          docker compose up -d --wait --force-recreate
+          python scripts/verify_deploy.py --url "http://127.0.0.1:$HOST_PORT"
+      - name: Record release
+        if: always() && steps.build.outputs.image != ''
+        run: |
+          {
+            echo "## Release record"
+            echo ""
+            echo "| image | image id | git | ref |"
+            echo "|---|---|---|---|"
+            echo "| \`${{ steps.build.outputs.image }}\` | \`${{ steps.build.outputs.image_id }}\` | \`${GITHUB_SHA::12}\` | ${GITHUB_REF_NAME} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Container logs
+        if: failure()
+        run: docker compose logs --no-color | tail -100
+      - name: Tear down
+        if: always()
+        run: JWT_SECRET=teardown-only docker compose down -v  # compose interpolates the file even for down

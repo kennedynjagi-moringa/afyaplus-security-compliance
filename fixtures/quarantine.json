@@ -1,0 +1,4 @@
+{
+  "policy": "A quarantined golden case is still run and reported but does not count towards the score. Each entry needs a reason, an owner and an expiry date; an expired entry fails the gate. At most eval.max_quarantined_fraction of the set may be quarantined.",
+  "cases": []
+}
